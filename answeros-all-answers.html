@@ -860,7 +860,7 @@ document.getElementById('refreshBtn').addEventListener('click', ()=>{
   panel.style.display = panel.style.display==='none' ? 'grid' : 'none';
 });
 
-/* ---------- Option A: copy chat-refresh prompt ---------- */
+/* ---------- Option A: copy chat-refresh prompt ---------- 
 const REFRESH_PROMPT = "Refresh AnswerOS (dashboard + All Answers) from my Mains Tracker Google Sheet — pull the latest rows and rebuild both pages.";
 document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
   const toast = document.getElementById('refreshToast');
@@ -871,7 +871,7 @@ document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
     : `Couldn't copy automatically — just type this into your Claude chat: "${REFRESH_PROMPT}"`;
   toast.classList.add('show');
   setTimeout(()=> toast.classList.remove('show'), copied ? 4500 : 7000);
-});
+});*/
 
 /* ---------- Option B: live CSV sync (works once self-hosted) ----------
    NOTE ON PERSISTENCE: this build keeps the connected sheet URL in memory
@@ -881,7 +881,7 @@ document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
    below for localStorage.getItem/setItem — browser storage works fine on
    a real site, just not inside Claude's artifact preview.
 ------------------------------------------------------------------------- */
-let connectedCsvUrl = ''; // → on your own host: let connectedCsvUrl = localStorage.getItem('answeros_csv_url') || '';
+let connectedCsvUrl = localStorage.getItem('answeros_csv_url') ; // → on your own host: let connectedCsvUrl = localStorage.getItem('answeros_csv_url') || '';
 
 function normalizePaper(raw){
   const t = (raw||'').toLowerCase();
