@@ -117,6 +117,7 @@
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
 </style>
+<script src="answeros-data.js"></script>
 </head>
 <body>
 <div class="app">
@@ -170,12 +171,28 @@
    Real answer data — only what's needed to power auto-tracked
    goal metrics (this week / this month / avg score / streak).
 ============================================================ */
-const ANSWERS = [
+const ANSWERS = (() => {
+  const live = window.AnswerOS?.getAnswers?.() || [];
+  if (live.length) {
+    return live.map((a, i) => ({
+      date: a.date || a.Date || a.timestamp || a.Timestamp || '',
+      paper: a.paper || a.Paper || a.gsPaper || a.GSPaper || a.subject || a.Subject || 'GS2',
+      subject: a.subject || a.Subject || a.paper || a.Paper || '',
+      subtopic: a.subtopic || a.Subtopic || a.theme || a.Theme || a.topic || a.Topic || a.question || a.Question || `Answer ${i + 1}`,
+      question: a.question || a.Question || a.title || a.Title || '',
+      marks: Number(a.marks ?? a.Marks ?? a.score ?? a.Score ?? 0),
+      max: Number(a.max ?? a.Max ?? a.maxMarks ?? a['Max Marks'] ?? 15),
+      status: a.status || a.Status || 'PROCESSED',
+      gapCategory: a.gapCategory || a['Gap Category'] || a.gap || ''
+    }));
+  }
+  return [
   {date:'2026-08-15', marks:4.5, max:15}, {date:'2026-08-14', marks:4.5, max:15}, {date:'2026-08-13', marks:6.5, max:15},
   {date:'2026-08-12', marks:7, max:15}, {date:'2026-08-11', marks:5, max:15}, {date:'2026-08-10', marks:6.5, max:15},
   {date:'2026-08-08', marks:6.5, max:15}, {date:'2026-08-05', marks:5.5, max:15}, {date:'2026-08-01', marks:4.5, max:15},
   {date:'2026-07-20', marks:5, max:15}, {date:'2026-07-15', marks:4.5, max:15}, {date:'2026-07-11', marks:3, max:10},
 ];
+})();;
 ANSWERS.forEach(a=> a.score = a.marks/a.max*10);
 const TODAY = new Date('2026-08-16');
 
@@ -446,6 +463,14 @@ function render(){
 }
 
 render();
+</script>
+
+<script>
+window.addEventListener('answeros:data-updated', function(){
+  if (window.__answerosLiveReloadBound) return;
+  window.__answerosLiveReloadBound = true;
+  setTimeout(function(){ location.reload(); }, 50);
+});
 </script>
 </body>
 </html>

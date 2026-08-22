@@ -105,6 +105,7 @@
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
 </style>
+<script src="answeros-data.js"></script>
 </head>
 <body>
 <div class="app">
@@ -186,7 +187,22 @@
    Examples/Data, Essential Keywords and My One Learning, all
    of which already exist in the real sheet.
 ============================================================ */
-const ANSWERS = [
+const ANSWERS = (() => {
+  const live = window.AnswerOS?.getAnswers?.() || [];
+  if (live.length) {
+    return live.map((a, i) => ({
+      date: a.date || a.Date || a.timestamp || a.Timestamp || '',
+      paper: a.paper || a.Paper || a.gsPaper || a.GSPaper || a.subject || a.Subject || 'GS2',
+      subject: a.subject || a.Subject || a.paper || a.Paper || '',
+      subtopic: a.subtopic || a.Subtopic || a.theme || a.Theme || a.topic || a.Topic || a.question || a.Question || `Answer ${i + 1}`,
+      question: a.question || a.Question || a.title || a.Title || '',
+      marks: Number(a.marks ?? a.Marks ?? a.score ?? a.Score ?? 0),
+      max: Number(a.max ?? a.Max ?? a.maxMarks ?? a['Max Marks'] ?? 15),
+      status: a.status || a.Status || 'PROCESSED',
+      gapCategory: a.gapCategory || a['Gap Category'] || a.gap || ''
+    }));
+  }
+  return [
   {date:'2026-08-15', paper:'GS1', subtopic:'Indian Freedom Struggle — Cultural Awakening',
    valueAdditions:["Bengal School of Art — Abanindranath Tagore's Bharat Mata painting broke from European style to foster indigenous aesthetic nationalism.","Anandamath — Bankim Chandra's novel gave the anthem Vande Mataram, galvanising the Swadeshi movement.","Charkha and Khadi — Gandhi turned spinning into a symbol of economic self-reliance and mass mobilisation."],
    examples:["Swadeshi Movement (1905) — boycott of British goods paired with mass singing of Vande Mataram."],
@@ -248,6 +264,7 @@ const ANSWERS = [
    keywords:["Constitutional morality","Impeachment procedure","Proved misbehaviour"],
    learning:"Integrate specific constitutional articles and removal procedures into judicial governance answers."},
 ];
+})();;
 
 const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
 const TYPE_COLORS = {va:{bg:'#eef3ee',fg:'#1c5c30',label:'Value Add'}, ex:{bg:'#e7edfa',fg:'#3b6fd5',label:'Example'}, kw:{bg:'#f3ecfb',fg:'#7a4fd5',label:'Keyword'}, learn:{bg:'#fbf5e8',fg:'#8a6212',label:'My Learning'}};
@@ -449,6 +466,14 @@ function renderDeckGrid(){
 }
 
 applyFilters();
+</script>
+
+<script>
+window.addEventListener('answeros:data-updated', function(){
+  if (window.__answerosLiveReloadBound) return;
+  window.__answerosLiveReloadBound = true;
+  setTimeout(function(){ location.reload(); }, 50);
+});
 </script>
 </body>
 </html>

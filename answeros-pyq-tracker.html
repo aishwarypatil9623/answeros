@@ -119,6 +119,7 @@
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
 </style>
+<script src="answeros-data.js"></script>
 </head>
 <body>
 <div class="app">
@@ -459,6 +460,14 @@ function renderDueStrip(){
 }
 
 render();
+</script>
+
+<script>
+window.addEventListener('answeros:data-updated', function(){
+  if (window.__answerosLiveReloadBound) return;
+  window.__answerosLiveReloadBound = true;
+  setTimeout(function(){ location.reload(); }, 50);
+});
 </script>
 </body>
 </html>

@@ -138,6 +138,7 @@
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
 </style>
+<script src="answeros-data.js"></script>
 </head>
 <body>
 <div class="app">
@@ -212,7 +213,22 @@
 /* ============================================================
    Same real 12-answer dataset used across the app.
 ============================================================ */
-const ANSWERS = [
+const ANSWERS = (() => {
+  const live = window.AnswerOS?.getAnswers?.() || [];
+  if (live.length) {
+    return live.map((a, i) => ({
+      date: a.date || a.Date || a.timestamp || a.Timestamp || '',
+      paper: a.paper || a.Paper || a.gsPaper || a.GSPaper || a.subject || a.Subject || 'GS2',
+      subject: a.subject || a.Subject || a.paper || a.Paper || '',
+      subtopic: a.subtopic || a.Subtopic || a.theme || a.Theme || a.topic || a.Topic || a.question || a.Question || `Answer ${i + 1}`,
+      question: a.question || a.Question || a.title || a.Title || '',
+      marks: Number(a.marks ?? a.Marks ?? a.score ?? a.Score ?? 0),
+      max: Number(a.max ?? a.Max ?? a.maxMarks ?? a['Max Marks'] ?? 15),
+      status: a.status || a.Status || 'PROCESSED',
+      gapCategory: a.gapCategory || a['Gap Category'] || a.gap || ''
+    }));
+  }
+  return [
 {
   date:"2026-08-15", paper:"GS1", subject:"Modern Indian History", subtopic:"Indian Freedom Struggle — Cultural Awakening and Nationalism",
   question:"India's freedom struggle was not merely a political movement but also a cultural awakening that transformed art, literature, music and symbols into instruments of nationalism. Discuss.",
@@ -394,6 +410,7 @@ const ANSWERS = [
   learning:"Integrate specific constitutional articles and removal procedures into judicial governance answers."
 },
 ];
+})();;
 ANSWERS.forEach((a,i)=>{ a.score = a.marks/a.max*10; a.id = 'ans_'+i; });
 
 const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
@@ -653,6 +670,14 @@ document.getElementById('todayBtn').addEventListener('click', ()=>{
 
 renderCalendar();
 renderDayDetail();
+</script>
+
+<script>
+window.addEventListener('answeros:data-updated', function(){
+  if (window.__answerosLiveReloadBound) return;
+  window.__answerosLiveReloadBound = true;
+  setTimeout(function(){ location.reload(); }, 50);
+});
 </script>
 </body>
 </html>

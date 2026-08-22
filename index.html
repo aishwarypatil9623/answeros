@@ -6,9 +6,18 @@
   <meta http-equiv="refresh" content="0; url=answeros-dashboard.html">
   <title>AnswerOS</title>
   <script>window.location.replace('answeros-dashboard.html');</script>
+<script src="answeros-data.js"></script>
 </head>
 <body>
   <p>Opening AnswerOS Dashboard…</p>
   <p><a href="answeros-dashboard.html">Open the dashboard</a></p>
+
+<script>
+window.addEventListener('answeros:data-updated', function(){
+  if (window.__answerosLiveReloadBound) return;
+  window.__answerosLiveReloadBound = true;
+  setTimeout(function(){ location.reload(); }, 50);
+});
+</script>
 </body>
 </html>
