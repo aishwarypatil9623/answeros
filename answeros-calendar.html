@@ -217,15 +217,38 @@ const ANSWERS = (() => {
   const live = window.AnswerOS?.getAnswers?.() || [];
   if (live.length) {
     return live.map((a, i) => ({
-      date: a.date || a.Date || a.timestamp || a.Timestamp || '',
-      paper: a.paper || a.Paper || a.gsPaper || a.GSPaper || a.subject || a.Subject || 'GS2',
-      subject: a.subject || a.Subject || a.paper || a.Paper || '',
-      subtopic: a.subtopic || a.Subtopic || a.theme || a.Theme || a.topic || a.Topic || a.question || a.Question || `Answer ${i + 1}`,
-      question: a.question || a.Question || a.title || a.Title || '',
-      marks: Number(a.marks ?? a.Marks ?? a.score ?? a.Score ?? 0),
-      max: Number(a.max ?? a.Max ?? a.maxMarks ?? a['Max Marks'] ?? 15),
-      status: a.status || a.Status || 'PROCESSED',
-      gapCategory: a.gapCategory || a['Gap Category'] || a.gap || ''
+      ...a,
+      id: a.id || String(i + 1),
+      date: a.date || '',
+      paper: a.paper || 'Unknown',
+      subject: a.subject || '',
+      theme: a.theme || '',
+      subtopic: a.subtopic || a.theme || a.question || `Answer ${i + 1}`,
+      question: a.question || a.subtopic || '',
+      marks: Number(a.marks ?? 0),
+      max: Number(a.maxMarks ?? a.max ?? 15) || 15,
+      maxMarks: Number(a.maxMarks ?? a.max ?? 15) || 15,
+      score: Number(a.score ?? a.marks ?? 0),
+      score10: Number.isFinite(Number(a.score10)) ? Number(a.score10) : null,
+      directive: a.directive || '',
+      demand: Number.isFinite(Number(a.demandAddressed)) ? Number(a.demandAddressed) : null,
+      demandPct: Number.isFinite(Number(a.demandAddressed)) ? Number(a.demandAddressed) : null,
+      demandAddressed: Number.isFinite(Number(a.demandAddressed)) ? Number(a.demandAddressed) : null,
+      status: a.status || 'PROCESSED',
+      gapCategory: a.gapCategory || '',
+      feedback: a.feedback || '',
+      learning: a.learning || '',
+      pdfDate: a.pdfDate || '',
+      bestIntro: a.bestIntro || '',
+      idealSubheadings: Array.isArray(a.idealSubheadings) ? a.idealSubheadings : [],
+      mustHavePoints: Array.isArray(a.mustHavePoints) ? a.mustHavePoints : [],
+      valueAdditions: Array.isArray(a.valueAdditions) ? a.valueAdditions : [],
+      keywords: Array.isArray(a.keywords) ? a.keywords : [],
+      examples: Array.isArray(a.examples) ? a.examples : [],
+      bestConclusion: a.bestConclusion || '',
+      improvements: Array.isArray(a.improvements) ? a.improvements : [],
+      topperEdge: a.topperEdge || '',
+      demandBreakdown: Array.isArray(a.demandBreakdown) ? a.demandBreakdown : []
     }));
   }
   return [
