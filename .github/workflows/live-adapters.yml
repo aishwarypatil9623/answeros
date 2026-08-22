@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/live-sync-adapters.py'
+      - 'answeros-data.js'
       - '.github/workflows/live-adapters.yml'
   workflow_dispatch:
 
