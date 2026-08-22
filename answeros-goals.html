@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Goals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:6px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:120px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .ministat.flag .mv{color:var(--red);}
+  .ministat.good .mv{color:var(--green-700);}
+
+  .add-btn{display:flex;align-items:center;gap:7px;background:var(--green-800);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:var(--shadow);}
+  .add-btn:hover{background:var(--green-900);}
+  .add-btn svg{width:14px;height:14px;}
+
+  .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .preset-chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--ink-700);cursor:pointer;}
+  .preset-chip:hover{border-color:var(--green-600);color:var(--green-700);}
+
+  /* ===== goal form ===== */
+  .goal-form{background:var(--card);border:1.5px solid var(--green-600);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;margin-bottom:20px;}
+  .gf-title{font-size:13.5px;font-weight:700;margin-bottom:16px;}
+  .gf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .gf-field{display:flex;flex-direction:column;gap:5px;}
+  .gf-field.full{grid-column:1/-1;}
+  .gf-field label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-500);}
+  .gf-field input, .gf-field select{padding:9px 11px;border-radius:9px;border:1px solid var(--line);font-size:13px;font-family:inherit;outline:none;}
+  .gf-field input:focus, .gf-field select:focus{border-color:var(--green-600);box-shadow:0 0 0 3px var(--green-100);}
+  .gf-type-toggle{display:flex;gap:8px;}
+  .gf-type-btn{flex:1;padding:9px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--ink-700);cursor:pointer;text-align:center;}
+  .gf-type-btn.active{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+  .gf-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .gf-btn{padding:9px 18px;border-radius:9px;border:none;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .gf-cancel{background:#fff;border:1px solid var(--line);color:var(--ink-700);}
+  .gf-save{background:var(--green-700);color:#fff;}
+  .gf-save:hover{background:var(--green-800);}
+
+  /* ===== goal cards ===== */
+  .goal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;}
+  .goal-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;transition:box-shadow .15s ease, transform .15s ease;}
+  .goal-card:hover{box-shadow:0 2px 4px rgba(20,23,26,.05), 0 12px 28px rgba(20,23,26,.08);transform:translateY(-1px);}
+  .goal-card.completed{background:var(--green-50);border-color:var(--green-600);}
+  .gc-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;}
+  .gc-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+  .gc-main{flex:1;min-width:0;}
+  .gc-title{font-size:14px;font-weight:700;color:var(--ink-900);}
+  .gc-meta{font-size:10.5px;color:var(--ink-500);margin-top:2px;}
+  .gc-actions{display:flex;gap:4px;flex-shrink:0;}
+  .gc-icon-btn{width:26px;height:26px;border-radius:7px;border:none;background:transparent;color:var(--ink-300);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .gc-icon-btn:hover{background:#f0f2ee;color:var(--ink-700);}
+  .gc-icon-btn.danger:hover{background:var(--red-50);color:var(--red);}
+  .gc-icon-btn svg{width:14px;height:14px;}
+
+  .gc-progress-row{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 6px 0;}
+  .gc-progress-val{font-size:12.5px;font-weight:700;color:var(--ink-900);}
+  .gc-progress-pct{font-size:11px;font-weight:700;}
+  .gc-track{height:9px;background:#eef1ee;border-radius:5px;overflow:hidden;}
+  .gc-track > div{height:100%;border-radius:5px;transition:width .3s ease;}
+  .gc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;}
+  .gc-deadline{font-size:11px;color:var(--ink-500);}
+  .gc-deadline.overdue{color:var(--red);font-weight:600;}
+  .gc-stepper{display:flex;align-items:center;gap:6px;}
+  .gc-step-btn{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-700);cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .gc-step-btn:hover{border-color:var(--green-600);color:var(--green-700);}
+  .gc-auto-badge{font-size:9px;font-weight:700;color:var(--blue);background:#e7edfa;padding:2px 7px;border-radius:5px;}
+
+  .empty-goals{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:50px 20px;text-align:center;color:var(--ink-500);font-size:13px;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        A goal without a deadline is just a wish.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <div>
+        <h1>Goals</h1>
+        <p>Set targets, track them against your real answer data or manually.</p>
+      </div>
+      <button class="add-btn" id="addGoalBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        New Goal
+      </button>
+    </div>
+    <div class="note-banner">🎯 Goals are fully editable — create, edit, delete anytime. "Auto-tracked" goals pull live from your real 12 answers (this week's count, average score, streak). "Manual" goals you update yourself with the +/− steppers. Like other interactive pages, goal data resets each session — no Goals tab in your sheet yet to persist to. Add one if you want this to survive reloads once self-hosted.</div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="preset-row" id="presetRow"></div>
+
+    <div id="formSlot"></div>
+
+    <div class="goal-grid" id="goalGrid"></div>
+    <div class="empty-goals" id="emptyGoals" style="display:none;">No goals yet — click "New Goal" or pick a preset above to get started.</div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Real answer data — only what's needed to power auto-tracked
+   goal metrics (this week / this month / avg score / streak).
+============================================================ */
+const ANSWERS = [
+  {date:'2026-08-15', marks:4.5, max:15}, {date:'2026-08-14', marks:4.5, max:15}, {date:'2026-08-13', marks:6.5, max:15},
+  {date:'2026-08-12', marks:7, max:15}, {date:'2026-08-11', marks:5, max:15}, {date:'2026-08-10', marks:6.5, max:15},
+  {date:'2026-08-08', marks:6.5, max:15}, {date:'2026-08-05', marks:5.5, max:15}, {date:'2026-08-01', marks:4.5, max:15},
+  {date:'2026-07-20', marks:5, max:15}, {date:'2026-07-15', marks:4.5, max:15}, {date:'2026-07-11', marks:3, max:10},
+];
+ANSWERS.forEach(a=> a.score = a.marks/a.max*10);
+const TODAY = new Date('2026-08-16');
+
+function computeAutoValue(metric){
+  if(metric==='answers_week'){
+    return ANSWERS.filter(a=> (TODAY - new Date(a.date))/86400000 <= 7).length;
+  }
+  if(metric==='answers_month'){
+    return ANSWERS.filter(a=>{
+      const d = new Date(a.date);
+      return d.getFullYear()===TODAY.getFullYear() && d.getMonth()===TODAY.getMonth();
+    }).length;
+  }
+  if(metric==='avg_score'){
+    return +(ANSWERS.reduce((s,a)=>s+a.score,0)/ANSWERS.length).toFixed(1);
+  }
+  if(metric==='streak'){
+    const uniqueDates = [...new Set(ANSWERS.map(a=>a.date))].sort().reverse();
+    let streak=0; let expected = new Date(uniqueDates[0]);
+    for(const d of uniqueDates){
+      if(d === expected.toISOString().slice(0,10)){ streak++; expected.setDate(expected.getDate()-1); } else break;
+    }
+    return streak;
+  }
+  return 0;
+}
+
+const METRIC_LABELS = {
+  answers_week: "This Week's Answers", answers_month: "This Month's Answers",
+  avg_score: "Average Score", streak: "Current Streak (days)"
+};
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html',true],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- goal state ---------- */
+let GOALS = [
+  {id:'g1', title:"Write 5 answers this week", kind:'auto', metric:'answers_week', target:5, current:0, unit:'answers', deadline:'2026-08-22', icon:'✍️', color:'#2c8a46'},
+  {id:'g2', title:"Reach 6/10 average score", kind:'auto', metric:'avg_score', target:6, current:0, unit:'/10', deadline:'2026-09-30', icon:'📈', color:'#3b6fd5'},
+  {id:'g3', title:"Complete PSIR Paper 1 revision", kind:'manual', target:60, current:22, unit:'topics', deadline:'2026-09-15', icon:'📚', color:'#7a4fd5'},
+];
+let editingId = null;
+let formOpen = false;
+let formDraft = null;
+let nextId = 4;
+
+function refreshAutoGoals(){
+  GOALS.forEach(g=>{ if(g.kind==='auto') g.current = computeAutoValue(g.metric); });
+}
+
+/* ---------- presets ---------- */
+const PRESETS = [
+  {label:"Daily: Write 1 answer today", kind:'manual', metric:null, target:1, unit:'answers', icon:'✍️', color:'#2c8a46', days:1},
+  {label:"Weekly: Write 5 answers", kind:'auto', metric:'answers_week', target:5, unit:'answers', icon:'📅', color:'#2c8a46', days:7},
+  {label:"Score: Reach 6/10 average", kind:'auto', metric:'avg_score', target:6, unit:'/10', icon:'📈', color:'#3b6fd5', days:45},
+  {label:"Streak: 14-day writing streak", kind:'auto', metric:'streak', target:14, unit:'days', icon:'🔥', color:'#e0762c', days:14},
+  {label:"Custom goal", kind:'manual', metric:null, target:10, unit:'units', icon:'🎯', color:'#7a4fd5', days:30, custom:true},
+];
+document.getElementById('presetRow').innerHTML = PRESETS.map((p,i)=>`<div class="preset-chip" data-preset="${i}">+ ${p.label}</div>`).join('');
+document.getElementById('presetRow').addEventListener('click', e=>{
+  const chip = e.target.closest('.preset-chip'); if(!chip) return;
+  const p = PRESETS[parseInt(chip.dataset.preset)];
+  const deadline = new Date(TODAY); deadline.setDate(deadline.getDate()+p.days);
+  openForm(null, {
+    title: p.custom ? '' : p.label.replace(/^(Daily|Weekly|Score|Streak):\s*/,''),
+    kind: p.kind, metric: p.metric, target: p.target, unit: p.unit,
+    deadline: deadline.toISOString().slice(0,10), icon: p.icon, color: p.color
+  });
+});
+
+/* ---------- form ---------- */
+document.getElementById('addGoalBtn').addEventListener('click', ()=> openForm(null, null));
+
+function openForm(editId, prefill){
+  editingId = editId;
+  formOpen = true;
+  const existing = editId ? GOALS.find(g=>g.id===editId) : null;
+  formDraft = existing ? {...existing} : (prefill || {title:'', kind:'manual', metric:'answers_week', target:5, current:0, unit:'answers', deadline: new Date(TODAY.getTime()+7*86400000).toISOString().slice(0,10), icon:'🎯', color:'#2c8a46'});
+  renderForm();
+}
+function closeForm(){ formOpen=false; editingId=null; formDraft=null; document.getElementById('formSlot').innerHTML=''; }
+
+function renderForm(){
+  const d = formDraft;
+  document.getElementById('formSlot').innerHTML = `
+    <div class="goal-form">
+      <div class="gf-title">${editingId ? 'Edit Goal' : 'New Goal'}</div>
+      <div class="gf-grid">
+        <div class="gf-field full">
+          <label>Goal Title</label>
+          <input type="text" id="fTitle" value="${d.title.replace(/"/g,'&quot;')}" placeholder="e.g. Write 5 answers this week" />
+        </div>
+        <div class="gf-field full">
+          <label>Tracking Type</label>
+          <div class="gf-type-toggle">
+            <div class="gf-type-btn ${d.kind==='auto'?'active':''}" data-kind="auto">Auto-tracked (from real data)</div>
+            <div class="gf-type-btn ${d.kind==='manual'?'active':''}" data-kind="manual">Manual (I'll update it)</div>
+          </div>
+        </div>
+        ${d.kind==='auto' ? `
+        <div class="gf-field full">
+          <label>Metric</label>
+          <select id="fMetric">
+            ${Object.entries(METRIC_LABELS).map(([k,v])=>`<option value="${k}" ${d.metric===k?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>` : ''}
+        <div class="gf-field">
+          <label>Target</label>
+          <input type="number" id="fTarget" value="${d.target}" step="0.1" />
+        </div>
+        <div class="gf-field">
+          <label>Unit</label>
+          <input type="text" id="fUnit" value="${d.unit}" placeholder="e.g. answers, topics" ${d.kind==='auto'?'readonly':''} />
+        </div>
+        ${d.kind==='manual' ? `
+        <div class="gf-field">
+          <label>Current Progress</label>
+          <input type="number" id="fCurrent" value="${d.current}" step="0.1" />
+        </div>` : ''}
+        <div class="gf-field">
+          <label>Deadline</label>
+          <input type="date" id="fDeadline" value="${d.deadline}" />
+        </div>
+      </div>
+      <div class="gf-actions">
+        <button class="gf-btn gf-cancel" id="fCancel">Cancel</button>
+        <button class="gf-btn gf-save" id="fSave">${editingId ? 'Save Changes' : 'Create Goal'}</button>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('.gf-type-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      formDraft.title = document.getElementById('fTitle').value;
+      formDraft.target = document.getElementById('fTarget').value;
+      formDraft.deadline = document.getElementById('fDeadline').value;
+      formDraft.kind = btn.dataset.kind;
+      if(formDraft.kind==='auto'){ formDraft.metric = formDraft.metric||'answers_week'; formDraft.unit = formDraft.metric==='avg_score'?'/10':(formDraft.metric==='streak'?'days':'answers'); }
+      renderForm();
+    });
+  });
+  const metricSel = document.getElementById('fMetric');
+  if(metricSel) metricSel.addEventListener('change', ()=>{
+    const m = metricSel.value;
+    document.getElementById('fUnit').value = m==='avg_score'?'/10':(m==='streak'?'days':'answers');
+  });
+  document.getElementById('fCancel').addEventListener('click', closeForm);
+  document.getElementById('fSave').addEventListener('click', saveForm);
+}
+
+function saveForm(){
+  const title = document.getElementById('fTitle').value.trim();
+  if(!title) return;
+  const kind = formDraft.kind;
+  const target = parseFloat(document.getElementById('fTarget').value)||0;
+  const unit = document.getElementById('fUnit').value.trim();
+  const deadline = document.getElementById('fDeadline').value;
+  const metric = kind==='auto' ? document.getElementById('fMetric').value : null;
+  const current = kind==='manual' ? (parseFloat(document.getElementById('fCurrent').value)||0) : 0;
+
+  if(editingId){
+    const g = GOALS.find(x=>x.id===editingId);
+    Object.assign(g, {title, kind, metric, target, unit, deadline, current: kind==='manual'?current:g.current});
+  } else {
+    GOALS.push({
+      id:'g'+(nextId++), title, kind, metric, target, current: kind==='manual'?current:0,
+      unit, deadline, icon: formDraft.icon||'🎯', color: formDraft.color||'#2c8a46'
+    });
+  }
+  closeForm();
+  render();
+}
+
+/* ---------- delete / step ---------- */
+function deleteGoal(id){
+  GOALS = GOALS.filter(g=>g.id!==id);
+  render();
+}
+function stepGoal(id, delta){
+  const g = GOALS.find(x=>x.id===id);
+  if(g && g.kind==='manual'){ g.current = Math.max(0, +(g.current+delta).toFixed(1)); render(); }
+}
+
+/* ---------- render ---------- */
+function daysLeft(deadline){ return Math.round((new Date(deadline)-TODAY)/86400000); }
+
+function render(){
+  refreshAutoGoals();
+
+  const total = GOALS.length;
+  const completed = GOALS.filter(g=>g.current>=g.target).length;
+  const overdue = GOALS.filter(g=>g.current<g.target && daysLeft(g.deadline)<0).length;
+  const onTrack = total - completed - overdue;
+  document.getElementById('ministats').innerHTML = `
+    <div class="ministat"><div class="mv">${total}</div><div class="ml">Active Goals</div></div>
+    <div class="ministat good"><div class="mv">${completed}</div><div class="ml">Completed</div></div>
+    <div class="ministat"><div class="mv">${onTrack}</div><div class="ml">On Track</div></div>
+    <div class="ministat flag"><div class="mv">${overdue}</div><div class="ml">Overdue</div></div>
+  `;
+
+  const gridEl = document.getElementById('goalGrid');
+  const emptyEl = document.getElementById('emptyGoals');
+  if(GOALS.length===0){ gridEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  emptyEl.style.display='none';
+
+  gridEl.innerHTML = GOALS.map(g=>{
+    const pct = Math.min(100, Math.round(g.current/g.target*100));
+    const isComplete = g.current >= g.target;
+    const dl = daysLeft(g.deadline);
+    const overdue = !isComplete && dl < 0;
+    const barColor = isComplete ? 'var(--green-600)' : overdue ? 'var(--red)' : g.color;
+    const pctColor = isComplete ? 'var(--green-700)' : overdue ? 'var(--red)' : 'var(--ink-700)';
+    const deadlineLabel = overdue ? `${Math.abs(dl)}d overdue` : isComplete ? 'Completed 🎉' : `${dl}d left`;
+
+    return `<div class="goal-card ${isComplete?'completed':''}">
+      <div class="gc-top">
+        <div class="gc-icon" style="background:${g.color}1a;">${g.icon}</div>
+        <div class="gc-main">
+          <div class="gc-title">${g.title}</div>
+          <div class="gc-meta">${g.kind==='auto' ? `<span class="gc-auto-badge">AUTO · ${METRIC_LABELS[g.metric]}</span>` : 'Manual tracking'}</div>
+        </div>
+        <div class="gc-actions">
+          <button class="gc-icon-btn" data-edit="${g.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+          <button class="gc-icon-btn danger" data-delete="${g.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg></button>
+        </div>
+      </div>
+      <div class="gc-progress-row">
+        <span class="gc-progress-val">${g.current}${g.unit==='/10'?'':' '+g.unit} / ${g.target}${g.unit==='/10'?g.unit:' '+g.unit}</span>
+        <span class="gc-progress-pct" style="color:${pctColor};">${pct}%</span>
+      </div>
+      <div class="gc-track"><div style="width:${pct}%;background:${barColor};"></div></div>
+      <div class="gc-footer">
+        <span class="gc-deadline ${overdue?'overdue':''}">${deadlineLabel}</span>
+        ${g.kind==='manual' ? `
+        <div class="gc-stepper">
+          <button class="gc-step-btn" data-step-down="${g.id}">−</button>
+          <button class="gc-step-btn" data-step-up="${g.id}">+</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  gridEl.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', ()=> openForm(b.dataset.edit, null)));
+  gridEl.querySelectorAll('[data-delete]').forEach(b=> b.addEventListener('click', ()=> deleteGoal(b.dataset.delete)));
+  gridEl.querySelectorAll('[data-step-up]').forEach(b=> b.addEventListener('click', ()=> stepGoal(b.dataset.stepUp, 1)));
+  gridEl.querySelectorAll('[data-step-down]').forEach(b=> b.addEventListener('click', ()=> stepGoal(b.dataset.stepDown, -1)));
+}
+
+render();
+</script>
+</body>
+</html>

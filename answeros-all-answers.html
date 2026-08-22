@@ -142,6 +142,17 @@
   .question-block .qlabel{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--green-700);margin-bottom:6px;}
   .question-text{font-size:16px;line-height:1.55;color:var(--ink-900);}
   .demand-list{margin-top:14px;display:flex;flex-direction:column;gap:7px;}
+  .structure-block{margin-top:16px;background:#fbfbf9;border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .structure-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .structure-head .st-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-500);}
+  .structure-head .sample-tag{font-size:9px;font-weight:700;color:#8a6212;background:var(--amber-50);border:1px solid #e7dcc0;padding:2px 7px;border-radius:5px;}
+  .subhead-chip-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .subhead-chip{display:flex;align-items:center;gap:6px;background:var(--green-100);color:var(--green-800);font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;}
+  .subhead-chip .snum{width:16px;height:16px;border-radius:50%;background:var(--green-700);color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .subhead-arrow{color:var(--ink-300);font-size:12px;}
+  .musthave-list{display:flex;flex-direction:column;gap:7px;}
+  .musthave-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.5;color:var(--ink-700);}
+  .musthave-item .mh-box{width:14px;height:14px;border:2px solid var(--green-600);border-radius:4px;flex-shrink:0;margin-top:2px;}
   .demand-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink-700);line-height:1.4;}
   .demand-item .di-ic{flex-shrink:0;margin-top:1px;}
   .demand-item.missing{color:var(--red);}
@@ -288,6 +299,8 @@ const ANSWERS = [
     {status:"done", text:"Evaluate use of music and symbols"},
   ],
   bestIntro:"Cultural nationalism served as the vital bedrock of India's freedom struggle, converting art and ideas into powerful instruments of anti-colonial resistance.",
+  idealSubheadings:["Cultural Nationalism in Art & Painting","Literature as a Mobilising Force","Music and Symbols in Mass Movements","Legacy for Modern National Identity"],
+  mustHavePoints:["Bengal School of Art and Bharat Mata as visual nationalism","Vande Mataram / Anandamath as a mobilising anthem","Khadi and Charkha as economic-political symbols","Regional/vernacular literary contributions (e.g. Subramania Bharati)"],
   valueAdditions:[
     "Bengal School of Art — Abanindranath Tagore's Bharat Mata painting broke away from European academic style to foster indigenous aesthetic nationalism.",
     "Anandamath — Bankim Chandra Chatterjee's novel provided the immortal anthem Vande Mataram, galvanising the Swadeshi movement across Bengal and beyond.",
@@ -321,6 +334,8 @@ const ANSWERS = [
     {status:"missing", text:"Include country-specific examples"},
   ],
   bestIntro:"Energy diplomacy acts as a vital catalyst in transforming geographic proximity into strategic economic interdependence within South Asia.",
+  idealSubheadings:["Strategic Rationale for Energy Diplomacy","Economic Interests via Regional Grids","Bilateral Case Studies (Nepal/Bhutan/Bangladesh)","Institutional Frameworks Enabling Cooperation"],
+  mustHavePoints:["SAARC Framework Agreement for Energy Cooperation","At least one specific cross-border transmission project","Bilateral hydropower engagement (e.g. Bhutan)","Regional integration angle, not just bilateral"],
   valueAdditions:[
     "SAARC Framework Agreement for Energy Cooperation — Provides the institutional foundation for regional power grid integration and multilateral energy trade.",
     "Cross-border transmission lines — Physically anchors bilateral ties, such as the Dhalkebar-Muzaffarpur link connecting India and Nepal.",
@@ -353,6 +368,8 @@ const ANSWERS = [
     {status:"done", text:"Provide critical evaluation balancing perspectives"},
   ],
   bestIntro:"Balancing national security imperatives with civil society autonomy remains a defining challenge for modern democratic governance.",
+  idealSubheadings:["Rationale for State Oversight","Civil Society Autonomy Concerns","Constitutional Balancing (Article 19)","Way Forward — Risk-Based Regulation"],
+  mustHavePoints:["Article 19(1)(c) and reasonable restrictions under 19(4)","Specific 2026 FCRA Amendment provisions","Judicial guidance balancing security and rights","Compliance burden on small grassroots NGOs"],
   valueAdditions:[
     "Article 19(1)(c) — Guarantees freedom to form associations, which must be balanced reasonably under Article 19(4) for sovereignty and integrity.",
     "Supreme Court guidelines in IAFAR v. Union of India — Emphasizes that regulation of foreign funds must not stifle legitimate human rights advocacy.",
@@ -380,6 +397,8 @@ const ANSWERS = [
     {status:"done", text:"Examine global competitiveness enhancement"},
   ],
   bestIntro:"Reimagining India's 'invisible giant' MSME sector requires shifting from dispersed expansion to strategic agglomeration and industrial clustering.",
+  idealSubheadings:["Rationale for Cluster-Based Approach","Institutional Mechanisms (CFCs, SFURTI)","Productivity and GVC Integration","Way Forward"],
+  mustHavePoints:["SFURTI Scheme for traditional-industry clusters","Common Facility Centres reducing capex","Concrete cluster example (e.g. Tiruppur)","MSME contribution to GDP/exports (specific figure)"],
   valueAdditions:[
     "SFURTI Scheme — Provides financial assistance for traditional industry clusters, strengthening sustainable livelihoods and rural manufacturing.",
     "Common Facility Centres (CFCs) — Enables resource pooling for testing, design, and processing, drastically reducing capital expenditure for individual MSMEs.",
@@ -409,6 +428,8 @@ const ANSWERS = [
     {status:"partial", text:"Suggest a balanced way forward"},
   ],
   bestIntro:"Affirmative action aims to achieve substantive equality, yet excluding religious converts from Scheduled Caste benefits creates a complex socio-legal dilemma.",
+  idealSubheadings:["Constitutional Basis for SC Status","Arguments For Extension","Arguments Against / Resource Dilution","Judicial and Commission Recommendations"],
+  mustHavePoints:["Article 341 and the 1950 Presidential Order","Ranganath Misra Commission recommendation","Balakrishnan Commission's mandate","Tension between Article 25 and Article 14/15"],
   valueAdditions:[
     "Article 341 — Highlights the constitutional restriction limiting Scheduled Caste status exclusively to Hindus, Sikhs, and Buddhists through the 1950 Presidential Order.",
     "Ranganath Misra Commission (2007) — Recommended extending Scheduled Caste status to Dalit Christians and Dalit Muslims to address continuing social discrimination.",
@@ -437,6 +458,8 @@ const ANSWERS = [
     {status:"partial", text:"Provide forward-looking perspective"},
   ],
   bestIntro:"Digital transformation in maritime administration is critical for streamlining regulatory workflows and enhancing India's blue economy potential.",
+  idealSubheadings:["Significance for Maritime Governance","Enabling Digital Infrastructure","Implementation Challenges","Way Forward"],
+  mustHavePoints:["Sagarmala Programme as the port-development anchor","Single-window clearance mechanism specifics","National Logistics Policy linkage","Digital divide affecting small fishermen"],
   valueAdditions:[
     "Sagarmala Programme — Highlights how port-led development requires robust digital infrastructure for seamless logistics and coastal community welfare.",
     "National Logistics Policy — Demonstrates the integration of multimodal transport through unified digital platforms like the Unified Logistics Interface Platform.",
@@ -467,6 +490,8 @@ const ANSWERS = [
     {status:"done", text:"Suggest balanced way forward"},
   ],
   bestIntro:"As India's UPI transforms global digital payments, its zero-MDR model sparks a critical debate on balancing financial inclusion with ecosystem sustainability.",
+  idealSubheadings:["UPI as Digital Public Infrastructure","Case for Keeping It Free","Case for Introducing Charges","A Sustainable Middle Path"],
+  mustHavePoints:["Zero-MDR model explained precisely","RBI's Payments Infrastructure Development Fund","Bank infrastructure cost burden (with a figure)","International comparison (e.g. Brazil's PIX)"],
   valueAdditions:[
     "RBI Discussion Paper on Charges in Payment Systems (2022) — Highlights the regulatory debate on balancing consumer affordability with merchant discount rates for banks.",
     "Payments Infrastructure Development Fund (PIDF) — Deployed by RBI to subsidize acceptance infrastructure without imposing direct user charges.",
@@ -498,6 +523,8 @@ const ANSWERS = [
     {status:"partial", text:"Examine significance for aviation safety"},
   ],
   bestIntro:"Upper air phenomena operating above tropospheric boundaries fundamentally dictate synoptic weather systems and contemporary aviation resilience.",
+  idealSubheadings:["Key Upper Air Phenomena","Significance for Weather Forecasting","Implications for Aviation Safety","Institutional and Technological Response"],
+  mustHavePoints:["Clear Air Turbulence defined precisely","Jet Streams and their role","Doppler Radar / Radiosonde technology","ICAO safety protocol reference"],
   valueAdditions:[
     "Clear Air Turbulence (CAT) — Highlights micro-scale upper air hazards occurring near jet stream boundaries without visual warning for aircraft.",
     "Doppler Weather Radar networks — Explains real-time detection mechanisms used by meteorological agencies for advanced wind shear tracking.",
@@ -527,6 +554,8 @@ const ANSWERS = [
     {status:"partial", text:"Suggest measures for accountable digital governance"},
   ],
   bestIntro:"Unchecked private digital power increasingly rivals sovereign authority, testing the resilience of modern democratic governance.",
+  idealSubheadings:["Nature of Private Digital Power","Challenges to Democratic Governance","Existing Regulatory Response","Measures for Accountable Governance"],
+  mustHavePoints:["IT Rules 2021 grievance redressal mechanism","DPDP Act's statutory obligations","Algorithmic transparency as a concept","Global benchmark reference (e.g. EU DSA)"],
   valueAdditions:[
     "Digital Personal Data Protection Act (DPDP Act) — Establishes statutory obligations for processing digital data, strengthening sovereign state authority over private entities.",
     "EU Digital Services Act (DSA) — Provides a global benchmark for regulating algorithmic transparency and holding big tech platforms legally accountable.",
@@ -555,6 +584,8 @@ const ANSWERS = [
     {status:"partial", text:"Identify challenges India must address to become a global leader in commercial space"},
   ],
   bestIntro:"Vikram-1 marks India's transition from a state-dominated space program to a vibrant private-led commercial space ecosystem.",
+  idealSubheadings:["Significance for India's Space Ecosystem","Enabling Policy Framework","Commercial Sector Challenges","Way Forward"],
+  mustHavePoints:["IN-SPACe as the single-window regulatory body","Indian Space Policy 2023's role delineation","Funding gap versus global peers (with a figure)","Dedicated spaceport infrastructure gap"],
   valueAdditions:[
     "IN-SPACe — Acts as a single-window autonomous nodal agency under Department of Space to promote, authorize, and supervise private space activities in India.",
     "Indian Space Policy 2023 — Delineates clear operational roles for ISRO, NSIL, and private entities, establishing a predictable framework for commercial space operations.",
@@ -585,6 +616,8 @@ const ANSWERS = [
     {status:"partial", text:"Discuss implications for India's strategic interests"},
   ],
   bestIntro:"Chokepoint geopolitics transforms narrow sea lanes into instruments of leverage, weaponizing geography for strategic dominance.",
+  idealSubheadings:["Chokepoints as Instruments of Power","U.S. Hormuz Toll — Implications","Impact on India's Energy Security","Legal and Strategic Response"],
+  mustHavePoints:["UNCLOS Article 38 on transit passage","India's crude oil import dependency (~85%)","Chabahar Port as a strategic alternative","SAGAR Vision reference"],
   valueAdditions:[
     "UNCLOS Article 38 — Governs transit passage through straits used for international navigation, limiting unilateral toll imposition.",
     "Chabahar Port — Serves as India's strategic alternative to bypass volatile regional bottlenecks in West Asia.",
@@ -615,6 +648,8 @@ const ANSWERS = [
     {status:"partial", text:"Assess shield argument against judicial accountability"},
   ],
   bestIntro:"Judicial independence is a structural prerequisite for constitutional democracy, but it cannot morph into an absolute immunity shielding misconduct.",
+  idealSubheadings:["Constitutional Removal Process","Resignation Loophole in Accountability","Balancing Independence and Accountability","Institutional Safeguards"],
+  mustHavePoints:["Articles 124(4) and 218 impeachment process","Judicial Standards and Accountability Bill gap","Justice Karnan case as precedent","In-house procedure as an alternative mechanism"],
   valueAdditions:[
     "Articles 124(4) and 218 — Outline the rigid constitutional impeachment process requiring special majority in Parliament for proved misbehaviour.",
     "Judicial Standards and Accountability Bill — Highlights the institutional gap in handling judicial misconduct short of removal when judges resign.",
@@ -655,9 +690,9 @@ function navIcon(name){
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
 }
 document.getElementById('nav').innerHTML = [
-  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html',true],['Analytics','bar'],
-  ['PYQ Tracker','archive'],['Learnings','book'],['Revision Hub','refresh'],['Flashcards','layers'],
-  ['Calendar','cal2'],['Goals','flag'],['Settings','gear']
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html',true],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
 ].map(([label,ic,href,active])=> href
     ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
     : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
@@ -742,6 +777,18 @@ function render(){
       return `<div class="demand-item ${di.status}"><span class="di-ic">${icon}</span><span>${di.text}</span></div>`;
     }).join('');
 
+    const structureHtml = (a.idealSubheadings && a.mustHavePoints) ? `
+      <div class="structure-block">
+        <div class="structure-head"><span class="st-label">Ideal Subheadings</span><span class="sample-tag">Sample — pending reprocessed sheet</span></div>
+        <div class="subhead-chip-row">
+          ${a.idealSubheadings.map((s,i)=>`<span class="subhead-chip"><span class="snum">${i+1}</span>${s}</span>${i<a.idealSubheadings.length-1?'<span class="subhead-arrow">→</span>':''}`).join('')}
+        </div>
+        <div class="structure-head"><span class="st-label">Must-Have Points</span></div>
+        <div class="musthave-list">
+          ${a.mustHavePoints.map(p=>`<div class="musthave-item"><span class="mh-box"></span><span>${p}</span></div>`).join('')}
+        </div>
+      </div>` : '';
+
     const railTicks = a.demand.map(di=>{
       const icon = di.status==='done'?'✓':di.status==='partial'?'!':'✕';
       return `<div class="tick ${di.status}" title="${di.status}">${icon}</div>`;
@@ -757,6 +804,8 @@ function render(){
               <div class="question-text serif">${a.question}</div>
               <div class="demand-list">${demandListHtml}</div>
             </div>
+
+            ${structureHtml}
 
             <div class="section">
               <div class="section-label">Best Introduction</div>
@@ -860,7 +909,7 @@ document.getElementById('refreshBtn').addEventListener('click', ()=>{
   panel.style.display = panel.style.display==='none' ? 'grid' : 'none';
 });
 
-/* ---------- Option A: copy chat-refresh prompt ---------- 
+/* ---------- Option A: copy chat-refresh prompt ---------- */
 const REFRESH_PROMPT = "Refresh AnswerOS (dashboard + All Answers) from my Mains Tracker Google Sheet — pull the latest rows and rebuild both pages.";
 document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
   const toast = document.getElementById('refreshToast');
@@ -871,7 +920,7 @@ document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
     : `Couldn't copy automatically — just type this into your Claude chat: "${REFRESH_PROMPT}"`;
   toast.classList.add('show');
   setTimeout(()=> toast.classList.remove('show'), copied ? 4500 : 7000);
-});*/
+});
 
 /* ---------- Option B: live CSV sync (works once self-hosted) ----------
    NOTE ON PERSISTENCE: this build keeps the connected sheet URL in memory
@@ -881,7 +930,7 @@ document.getElementById('copyPromptBtn').addEventListener('click', async ()=>{
    below for localStorage.getItem/setItem — browser storage works fine on
    a real site, just not inside Claude's artifact preview.
 ------------------------------------------------------------------------- */
-let connectedCsvUrl = localStorage.getItem('answeros_csv_url') ; // → on your own host: let connectedCsvUrl = localStorage.getItem('answeros_csv_url') || '';
+let connectedCsvUrl = ''; // → on your own host: let connectedCsvUrl = localStorage.getItem('answeros_csv_url') || '';
 
 function normalizePaper(raw){
   const t = (raw||'').toLowerCase();
@@ -930,6 +979,8 @@ function csvRowsToAnswers(rows){
     status: r['Status']||'PROCESSED',
     demand: parseDemand(r['Demand of the Question']),
     bestIntro: r['Best Introduction']||'',
+    idealSubheadings: splitBullets(r['Ideal Subheadings']).map(t=>t.replace(/\[MUST\]|\[\/MUST\]/g,'')),
+    mustHavePoints: splitBullets(r['Must-Have Points']).map(t=>t.replace(/\[MUST\]|\[\/MUST\]/g,'').replace(/\s*—.*$/,'').trim()),
     valueAdditions: splitBullets(r['Value Additions']),
     keywords: splitBullets(r['Essential Keywords']),
     examples: splitBullets(r['Examples/Data']),

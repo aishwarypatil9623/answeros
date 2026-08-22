@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Learnings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:130px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+
+  /* view toggle */
+  .view-toggle{display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:18px;width:fit-content;box-shadow:var(--shadow);}
+  .view-btn{padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;color:var(--ink-500);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;}
+  .view-btn.active{background:var(--green-800);color:#fff;}
+  .view-btn svg{width:14px;height:14px;}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .search-wrap{position:relative;flex:1;min-width:220px;max-width:340px;}
+  .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-300);}
+  .search-wrap input{width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-family:inherit;outline:none;}
+  .search-wrap input:focus{border-color:var(--green-600);box-shadow:0 0 0 3px var(--green-100);}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--ink-700);cursor:pointer;user-select:none;}
+  .chip:hover{border-color:var(--green-600);}
+  .chip.active{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+
+  /* ===== Content-type view ===== */
+  .type-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .type-tab{padding:9px 15px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:700;color:var(--ink-700);cursor:pointer;display:flex;align-items:center;gap:7px;}
+  .type-tab .tcount{background:#eef1ee;color:var(--ink-500);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+  .type-tab.active{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+  .type-tab.active .tcount{background:rgba(255,255,255,.2);color:#fff;}
+
+  .content-list{display:flex;flex-direction:column;gap:10px;}
+  .content-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);}
+  .cc-top{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap;}
+  .cc-ptag{font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 8px;}
+  .cc-subtopic{font-size:12px;font-weight:600;color:var(--ink-700);}
+  .cc-sep{color:var(--ink-300);font-size:11px;}
+  .cc-score{margin-left:auto;font-size:11px;font-weight:800;padding:2px 9px;border-radius:7px;flex-shrink:0;}
+  .cc-text{font-size:14.5px;line-height:1.55;color:var(--ink-900);}
+  .cc-chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .cc-chip{background:#eef3ee;color:var(--green-800);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .cc-bullets{display:flex;flex-direction:column;gap:6px;margin-top:2px;}
+  .cc-bullets li{font-size:12.5px;line-height:1.5;color:var(--ink-700);list-style:none;padding-left:14px;position:relative;}
+  .cc-bullets li::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--green-600);}
+
+  /* ===== Hierarchy view ===== */
+  .tree{display:flex;flex-direction:column;gap:10px;}
+  .paper-group{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .paper-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;}
+  .paper-head:hover{background:var(--green-50);}
+  .paper-badge{font-size:12px;font-weight:800;border-radius:8px;padding:6px 12px;flex-shrink:0;}
+  .paper-title{font-size:13.5px;font-weight:700;flex:1;}
+  .paper-sub{font-size:11px;color:var(--ink-500);}
+  .paper-chev{color:var(--ink-300);transition:transform .15s ease;}
+  .paper-group.open .paper-chev{transform:rotate(90deg);}
+  .paper-body{border-top:1px solid var(--line);padding:6px 18px 14px 18px;display:none;}
+  .paper-group.open .paper-body{display:block;}
+
+  .subject-block{margin-top:12px;}
+  .subject-block:first-child{margin-top:14px;}
+  .subject-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--green-700);margin-bottom:8px;padding-left:2px;}
+  .subtopic-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:9px;margin-bottom:6px;background:#fbfbf9;}
+  .subtopic-dot{width:7px;height:7px;border-radius:50%;background:var(--green-600);margin-top:6px;flex-shrink:0;}
+  .subtopic-main{flex:1;min-width:0;}
+  .subtopic-name{font-size:12.5px;font-weight:700;color:var(--ink-900);}
+  .subtopic-meta{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .subtopic-score{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;flex-shrink:0;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        Toppers don't remember more facts — they've organised them so recall is automatic.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <h1>Learnings</h1>
+      <p>Every reusable Introduction, Body element and Conclusion from your 12 answers — browsable by structure or by theme.</p>
+    </div>
+    <div class="note-banner">📚 Built from your real 12 answers. "Body Material" combines Value Additions, Examples/Data, Must-Have Points and Keywords — your sheet doesn't store these under one "Body" label, so this groups them by function, not by a literal column.</div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="view-toggle" id="viewToggle">
+      <div class="view-btn active" data-view="type">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        By Content Type
+      </div>
+      <div class="view-btn" data-view="tree">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M3 9h18M3 15h18"/></svg>
+        By Paper / Subject / Subtopic
+      </div>
+    </div>
+
+    <!-- ===== Content-type view ===== -->
+    <div id="typeView">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="searchBox" placeholder="Search across everything…" />
+        </div>
+        <div class="chips" id="paperChips"></div>
+      </div>
+      <div class="type-tabs" id="typeTabs"></div>
+      <div class="content-list" id="contentList"></div>
+    </div>
+
+    <!-- ===== Hierarchy view ===== -->
+    <div id="treeView" style="display:none;">
+      <div class="tree" id="tree"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Same real 12-answer dataset, carrying only what a knowledge
+   library needs: identity + reusable content fields.
+============================================================ */
+const ANSWERS = [
+  {date:'2026-08-15', paper:'GS1', subject:'Modern Indian History', subtopic:'Indian Freedom Struggle — Cultural Awakening', marks:4.5, max:15,
+   bestIntro:"Cultural nationalism served as the vital bedrock of India's freedom struggle, converting art and ideas into powerful instruments of anti-colonial resistance.",
+   bestConclusion:"This cultural renaissance laid the foundational ethos of modern India, uniting diverse populations into a shared national identity.",
+   valueAdditions:["Bengal School of Art — Abanindranath Tagore's Bharat Mata painting","Anandamath — Vande Mataram anthem galvanising Swadeshi","Subramania Bharati's Tamil poetry infusing nationalist consciousness","Charkha and Khadi as Swadeshi mobilisation symbols"],
+   examples:["Abanindranath Tagore's Bharat Mata — sacred mother-cult framing","Swadeshi Movement (1905) — boycott + Vande Mataram + indigenous art"],
+   keywords:["Cultural Nationalism","Indigenous Aesthetic Revival","Subaltern Mobilisation","Anti-Colonial Resistance","Ideological Hegemony"],
+   learning:"Ground every cultural argument in specific freedom-struggle personalities and movements."},
+  {date:'2026-08-14', paper:'GS2', subject:'International Relations', subtopic:"India's Neighbourhood Policy", marks:4.5, max:15,
+   bestIntro:"Energy diplomacy acts as a vital catalyst in transforming geographic proximity into strategic economic interdependence within South Asia.",
+   bestConclusion:"Advancing cross-border grid integration fosters sustainable prosperity and cements India's vision of a stable, interconnected South Asia.",
+   valueAdditions:["SAARC Framework Agreement for Energy Cooperation","Cross-border transmission lines (Dhalkebar-Muzaffarpur)","UN SDG 7 — affordable and clean energy goals","Bilateral hydropower pacts with Bhutan"],
+   examples:["Mangdechhu hydroelectric project — Bhutan-India cooperation","Maitree Super Thermal Power Project — cross-border supply to Bangladesh","Dhalkebar-Muzaffarpur transmission line — India-Nepal bulk power"],
+   keywords:["Energy interdependence","Grid interconnection","Strategic autonomy","Sub-regional cooperation"],
+   learning:"Substantiate every diplomatic argument with a concrete bilateral project."},
+  {date:'2026-08-13', paper:'GS2', subject:'Polity and Governance', subtopic:'Civil Society and NGOs Regulation', marks:6.5, max:15,
+   bestIntro:"Balancing national security imperatives with civil society autonomy remains a defining challenge for modern democratic governance.",
+   bestConclusion:"Harmonizing state security with a vibrant civil society ensures resilient democratic institutions.",
+   valueAdditions:["Article 19(1)(c) — freedom to form associations","Supreme Court guidelines in IAFAR v. Union of India"],
+   examples:["Aarey forest protest controversy — regulatory misuse concerns"],
+   keywords:["Foreign contribution regulation","Civil society autonomy","National security oversight","Compliance burden"],
+   learning:"Ground general arguments in specific institutional mechanisms and legal provisions."},
+  {date:'2026-08-12', paper:'GS3', subject:'Economy', subtopic:'MSME Sector and Industrial Clusters', marks:7, max:15,
+   bestIntro:"Reimagining India's 'invisible giant' MSME sector requires shifting from dispersed expansion to strategic agglomeration and industrial clustering.",
+   bestConclusion:"Scaling MSME clusters will transform India into a resilient, globally integrated manufacturing hub.",
+   valueAdditions:["SFURTI Scheme — traditional industry clusters","Common Facility Centres — pooled testing/design/processing","TReDS platform — trade receivables discounting"],
+   examples:["Tiruppur textile cluster — shared infrastructure, export competitiveness","Economic Survey — MSMEs ~31% of GDP, nearly half of exports"],
+   keywords:["Economies of agglomeration","Global Value Chains (GVCs)","Productivity trap"],
+   learning:"Ground general economic arguments in verified cluster-specific case studies."},
+  {date:'2026-08-11', paper:'GS2', subject:'Social Justice', subtopic:'Vulnerable Sections and Affirmative Action', marks:5, max:15,
+   bestIntro:"Affirmative action aims to achieve substantive equality, yet excluding religious converts from Scheduled Caste benefits creates a complex socio-legal dilemma.",
+   bestConclusion:"Balancing religious neutrality with substantive equality is vital to uphold fraternity and constitutional justice for all vulnerable citizens.",
+   valueAdditions:["Article 341 — 1950 Presidential Order restriction","Ranganath Misra Commission (2007) recommendation","Justice K.G. Balakrishnan Commission mandate"],
+   examples:["Kerala church segregation — caste discrimination persisting within Christian denominations"],
+   keywords:["Substantive Equality","Constitutional Morality","Resource Dilution","Elite Capture"],
+   learning:"Integrate specific constitutional articles and commission reports to strengthen socio-legal debates."},
+  {date:'2026-08-10', paper:'GS3', subject:'Economy', subtopic:'Infrastructure: Ports and Digital Governance', marks:6.5, max:15,
+   bestIntro:"Digital transformation in maritime administration is critical for streamlining regulatory workflows and enhancing India's blue economy potential.",
+   bestConclusion:"Leveraging digital governance in maritime administration will anchor India's transition into a globally competitive maritime hub by 2047.",
+   valueAdditions:["Sagarmala Programme — port-led development needs digital backbone","National Logistics Policy — Unified Logistics Interface Platform","IMO compliance — global digital data exchange standards","Draft Indian Ports Bill — legislative modernisation"],
+   examples:["Sagarmala Port Community System — electronic document exchange"],
+   keywords:["Maritime governance","Single-window clearance","Interoperability","Digital maritime ecosystem"],
+   learning:"Link administrative portals directly to specific governance reforms."},
+  {date:'2026-08-08', paper:'GS3', subject:'Economy', subtopic:'Digital Payments and Financial Inclusion', marks:6.5, max:15,
+   bestIntro:"As India's UPI transforms global digital payments, its zero-MDR model sparks a critical debate on balancing financial inclusion with ecosystem sustainability.",
+   bestConclusion:"Balancing financial inclusion with viable merchant revenue models will ensure the long-term resilience of India's digital payments ecosystem.",
+   valueAdditions:["RBI Discussion Paper on Charges in Payment Systems (2022)","Payments Infrastructure Development Fund (PIDF)","Brazil's PIX model — free P2P, commercial merchant fees"],
+   examples:["NPCI data — UPI crossed 100bn transactions in FY24","Bank cost burden — infrastructure maintenance without fee revenue"],
+   keywords:["Digital Public Infrastructure","Zero-MDR model","Financial sustainability","Merchant Discount Rate","Payment ecosystem"],
+   learning:"Substantiate payment ecosystem debates with concrete cost-revenue metrics."},
+  {date:'2026-08-05', paper:'GS1', subject:'Geography', subtopic:'Climatology and Upper Air Phenomena', marks:5.5, max:15,
+   bestIntro:"Upper air phenomena operating above tropospheric boundaries fundamentally dictate synoptic weather systems and contemporary aviation resilience.",
+   bestConclusion:"Integrating advanced upper air monitoring systems ensures robust climate resilience and safe global aviation networks.",
+   valueAdditions:["Clear Air Turbulence (CAT) — micro-scale hazards near jet streams","Doppler Weather Radar — real-time wind shear tracking","ICAO Annex provisions — international safety protocols","Radiosonde profiling — atmospheric sounding for NWP models"],
+   examples:["Air India Flight turbulence incident — vertical displacement risk","IMD-WMO collaboration — cross-border meteorological data sharing"],
+   keywords:["Jet Streams","Clear Air Turbulence","Madden-Julian Oscillation","Wind Shear","Tropopause Dynamics"],
+   learning:"Integrate rigorous scientific definitions for technical geography concepts."},
+  {date:'2026-08-01', paper:'GS2', subject:'Governance', subtopic:'Social Media, Digital Power and Democratic Governance', marks:4.5, max:15,
+   bestIntro:"Unchecked private digital power increasingly rivals sovereign authority, testing the resilience of modern democratic governance.",
+   bestConclusion:"Balancing technological innovation with robust regulatory frameworks is vital to safeguard democratic integrity in the digital age.",
+   valueAdditions:["Digital Personal Data Protection Act (DPDP Act)","EU Digital Services Act (DSA) — algorithmic transparency benchmark","Srikrishna Committee Report — data sovereignty vs innovation"],
+   examples:["Facebook Cambridge Analytica scandal — platform manipulation of elections","IT Rules 2021 — grievance redressal, due diligence for intermediaries"],
+   keywords:["Private digital power","Algorithmic bias","Data sovereignty","Content moderation","Platform accountability"],
+   learning:"Ground every digital governance argument in concrete regulatory acts and real platform challenges."},
+  {date:'2026-07-20', paper:'GS3', subject:'Science and Technology', subtopic:'Space Technology — Vikram-1', marks:5, max:15,
+   bestIntro:"Vikram-1 marks India's transition from a state-dominated space program to a vibrant private-led commercial space ecosystem.",
+   bestConclusion:"Unlocking private dynamism through robust policy and funding will cement India's position as a global commercial space powerhouse.",
+   valueAdditions:["IN-SPACe — single-window nodal agency for private space","Indian Space Policy 2023 — role delineation for ISRO/NSIL/private","Draft Space Activities Bill — legal clarity on jurisdiction/liability"],
+   examples:["Global space economy — India ~2% of $440bn market","Venture capital gap vs US counterparts"],
+   keywords:["Commercial space sector","Technology transfer","Public-Private Partnership","Launch vehicle capability","Space economy share"],
+   learning:"Integrate specific regulatory frameworks and funding data into technology answers."},
+  {date:'2026-07-15', paper:'GS2', subject:'International Relations / Geopolitics', subtopic:'Maritime Security and Global Chokepoints', marks:4.5, max:15,
+   bestIntro:"Chokepoint geopolitics transforms narrow sea lanes into instruments of leverage, weaponizing geography for strategic dominance.",
+   bestConclusion:"Ensuring open sea lanes requires multilateral maritime cooperation upholding international maritime law and free trade principles.",
+   valueAdditions:["UNCLOS Article 38 — transit passage through straits","Chabahar Port — India's alternative bypassing regional bottlenecks","SAGAR Vision — Indian Ocean maritime security engagement"],
+   examples:["Strait of Hormuz — ~30% of global petroleum transit","India's crude oil imports — ~85% dependency"],
+   keywords:["Chokepoint diplomacy","Geographic leverage","Energy security","Maritime security architecture"],
+   learning:"Ground strategic arguments in international law and hard data."},
+  {date:'2026-07-11', paper:'GS2', subject:'Polity and Governance', subtopic:'Judiciary and Accountability', marks:3, max:10,
+   bestIntro:"Judicial independence is a structural prerequisite for constitutional democracy, but it cannot morph into an absolute immunity shielding misconduct.",
+   bestConclusion:"Balancing institutional autonomy with robust accountability mechanisms is vital to preserve public trust in constitutional governance.",
+   valueAdditions:["Articles 124(4) and 218 — impeachment process","Judicial Standards and Accountability Bill — institutional gap","Justice C.S. Karnan case (2017) — immunity doesn't bar contempt"],
+   examples:["Justice V. Ramaswami inquiry — first major impeachment motion"],
+   keywords:["Constitutional morality","Impeachment procedure","Checks and balances","Proved misbehaviour"],
+   learning:"Integrate specific constitutional articles and removal procedures into judicial governance answers."},
+];
+ANSWERS.forEach(a=>{ a.score = a.marks/a.max*10; });
+
+const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
+function scoreTier(s){ return s>=6.5?{bg:'#e6f4ea',fg:'#1c5c30'}:s>=4.5?{bg:'#fbf5e8',fg:'#8a6212'}:{bg:'#fbf1ee',fg:'#b3402c'}; }
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html',true],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- mini stats ---------- */
+const totalAnswers = ANSWERS.length;
+const totalVA = ANSWERS.reduce((s,a)=>s+a.valueAdditions.length,0);
+const totalExamples = ANSWERS.reduce((s,a)=>s+a.examples.length,0);
+const totalKeywords = new Set(ANSWERS.flatMap(a=>a.keywords)).size;
+document.getElementById('ministats').innerHTML = `
+  <div class="ministat"><div class="mv">${totalAnswers}</div><div class="ml">Introductions Banked</div></div>
+  <div class="ministat"><div class="mv">${totalAnswers}</div><div class="ml">Conclusions Banked</div></div>
+  <div class="ministat"><div class="mv">${totalVA + totalExamples}</div><div class="ml">Body Elements Banked</div></div>
+  <div class="ministat"><div class="mv">${totalKeywords}</div><div class="ml">Unique Keywords</div></div>
+`;
+
+/* ---------- state ---------- */
+let activePaper = 'All';
+let searchTerm = '';
+let activeType = 'intro';
+let currentView = 'type';
+
+/* ---------- view toggle ---------- */
+document.getElementById('viewToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('.view-btn'); if(!btn) return;
+  currentView = btn.dataset.view;
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.toggle('active', b===btn));
+  document.getElementById('typeView').style.display = currentView==='type' ? 'block':'none';
+  document.getElementById('treeView').style.display = currentView==='tree' ? 'block':'none';
+  if(currentView==='tree') renderTree();
+});
+
+/* ---------- paper filter chips (type view) ---------- */
+const papersPresent = [...new Set(ANSWERS.map(a=>a.paper))];
+document.getElementById('paperChips').innerHTML = ['All', ...papersPresent].map(p=>
+  `<div class="chip ${p==='All'?'active':''}" data-paper="${p}">${p}</div>`
+).join('');
+document.getElementById('paperChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  activePaper = chip.dataset.paper;
+  document.querySelectorAll('#paperChips .chip').forEach(c=>c.classList.toggle('active', c===chip));
+  renderContentList();
+});
+document.getElementById('searchBox').addEventListener('input', e=>{ searchTerm = e.target.value.toLowerCase(); renderContentList(); });
+
+/* ---------- content type tabs ---------- */
+const TYPES = [
+  {key:'intro', label:'Introductions'},
+  {key:'body', label:'Body Material'},
+  {key:'conclusion', label:'Conclusions'},
+  {key:'keywords', label:'Keywords'},
+  {key:'learning', label:'My Learnings'},
+];
+function renderTypeTabs(){
+  document.getElementById('typeTabs').innerHTML = TYPES.map(t=>{
+    let count;
+    if(t.key==='intro'||t.key==='conclusion'||t.key==='learning') count = ANSWERS.length;
+    else if(t.key==='body') count = totalVA+totalExamples;
+    else count = totalKeywords;
+    return `<div class="type-tab ${activeType===t.key?'active':''}" data-type="${t.key}">${t.label} <span class="tcount">${count}</span></div>`;
+  }).join('');
+  document.querySelectorAll('.type-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{ activeType = tab.dataset.type; renderTypeTabs(); renderContentList(); });
+  });
+}
+renderTypeTabs();
+
+/* ---------- content list (by type) ---------- */
+function matchesFilter(a){
+  if(activePaper!=='All' && a.paper!==activePaper) return false;
+  return true;
+}
+function renderContentList(){
+  const rows = ANSWERS.filter(matchesFilter);
+  const listEl = document.getElementById('contentList');
+  let html = '';
+
+  function cardHead(a){
+    const col = PAPER_COLORS[a.paper]||'#888';
+    const tier = scoreTier(a.score);
+    const d = new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    return `<div class="cc-top">
+      <span class="cc-ptag" style="background:${col}1a;color:${col};">${a.paper}</span>
+      <span class="cc-subtopic">${a.subtopic}</span>
+      <span class="cc-sep">·</span>
+      <span style="font-size:11px;color:var(--ink-500);">${d}</span>
+      <span class="cc-score" style="background:${tier.bg};color:${tier.fg};">${a.score.toFixed(1)}/10</span>
+    </div>`;
+  }
+
+  if(activeType==='intro'){
+    html = rows.filter(a=> !searchTerm || (a.bestIntro+a.subtopic).toLowerCase().includes(searchTerm))
+      .map(a=>`<div class="content-card">${cardHead(a)}<div class="cc-text serif">${a.bestIntro}</div></div>`).join('');
+  }
+  else if(activeType==='conclusion'){
+    html = rows.filter(a=> !searchTerm || (a.bestConclusion+a.subtopic).toLowerCase().includes(searchTerm))
+      .map(a=>`<div class="content-card">${cardHead(a)}<div class="cc-text serif">${a.bestConclusion}</div></div>`).join('');
+  }
+  else if(activeType==='learning'){
+    html = rows.filter(a=> !searchTerm || (a.learning+a.subtopic).toLowerCase().includes(searchTerm))
+      .map(a=>`<div class="content-card">${cardHead(a)}<div class="cc-text">💡 ${a.learning}</div></div>`).join('');
+  }
+  else if(activeType==='body'){
+    html = rows.filter(a=> !searchTerm || (a.valueAdditions.join(' ')+a.examples.join(' ')+a.subtopic).toLowerCase().includes(searchTerm))
+      .map(a=>{
+        const bullets = [...a.valueAdditions.map(v=>`<li><b style="color:var(--ink-900);">Value Add:</b> ${v}</li>`), ...a.examples.map(v=>`<li><b style="color:var(--ink-900);">Example:</b> ${v}</li>`)];
+        return `<div class="content-card">${cardHead(a)}<ul class="cc-bullets">${bullets.join('')}</ul></div>`;
+      }).join('');
+  }
+  else if(activeType==='keywords'){
+    // aggregate unique keywords across filtered rows, each showing which answers used it
+    const kwMap = {};
+    rows.forEach(a=> a.keywords.forEach(k=>{ (kwMap[k]=kwMap[k]||[]).push(a); }));
+    html = Object.entries(kwMap)
+      .filter(([k])=> !searchTerm || k.toLowerCase().includes(searchTerm))
+      .sort((a,b)=> b[1].length-a[1].length)
+      .map(([k,answers])=>`<div class="content-card">
+        <div class="cc-text" style="font-weight:700;margin-bottom:8px;">${k}</div>
+        <div class="cc-chiprow">${answers.map(a=>`<span class="cc-chip">${a.paper} · ${a.subtopic}</span>`).join('')}</div>
+      </div>`).join('');
+  }
+
+  listEl.innerHTML = html || `<div style="padding:40px;text-align:center;color:var(--ink-500);font-size:13px;background:#fff;border:1px dashed var(--line);border-radius:12px;">Nothing matches this filter.</div>`;
+}
+renderContentList();
+
+/* ---------- tree view (Paper > Subject > Subtopic) ---------- */
+function renderTree(){
+  const byPaper = {};
+  ANSWERS.forEach(a=>{
+    byPaper[a.paper] = byPaper[a.paper] || {};
+    byPaper[a.paper][a.subject] = byPaper[a.paper][a.subject] || [];
+    byPaper[a.paper][a.subject].push(a);
+  });
+  const papers = Object.keys(byPaper).sort((a,b)=> byPaper[b] ? Object.values(byPaper[b]).flat().length - Object.values(byPaper[a]).flat().length : 0);
+
+  document.getElementById('tree').innerHTML = papers.map((p,pi)=>{
+    const subjects = byPaper[p];
+    const allInPaper = Object.values(subjects).flat();
+    const avgScore = allInPaper.reduce((s,a)=>s+a.score,0)/allInPaper.length;
+    const col = PAPER_COLORS[p]||'#888';
+    const subjectsHtml = Object.entries(subjects).map(([subj, answers])=>`
+      <div class="subject-block">
+        <div class="subject-title">${subj} (${answers.length})</div>
+        ${answers.map(a=>{
+          const tier = scoreTier(a.score);
+          return `<div class="subtopic-row">
+            <div class="subtopic-dot"></div>
+            <div class="subtopic-main">
+              <div class="subtopic-name">${a.subtopic}</div>
+              <div class="subtopic-meta">${new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} · Best Intro: "${a.bestIntro.slice(0,60)}${a.bestIntro.length>60?'…':''}"</div>
+            </div>
+            <div class="subtopic-score" style="background:${tier.bg};color:${tier.fg};">${a.score.toFixed(1)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    `).join('');
+
+    return `<div class="paper-group ${pi===0?'open':''}" data-paper-group="${p}">
+      <div class="paper-head" data-toggle="${p}">
+        <span class="paper-badge" style="background:${col}1a;color:${col};">${p}</span>
+        <span class="paper-title">${p}</span>
+        <span class="paper-sub">${allInPaper.length} answers · avg ${avgScore.toFixed(1)}/10</span>
+        <svg class="paper-chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="paper-body">${subjectsHtml}</div>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      el.closest('.paper-group').classList.toggle('open');
+    });
+  });
+}
+</script>
+</body>
+</html>

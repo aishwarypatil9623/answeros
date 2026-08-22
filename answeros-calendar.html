@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Calendar</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:130px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .ministat.flag .mv{color:var(--red);}
+
+  .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start;}
+
+  /* ===== calendar card ===== */
+  .cal-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .cal-nav{display:flex;align-items:center;gap:14px;}
+  .cal-nav-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-700);}
+  .cal-nav-btn:hover{border-color:var(--green-600);color:var(--green-700);}
+  .cal-month-title{font-size:16px;font-weight:700;letter-spacing:-0.01em;min-width:150px;text-align:center;}
+  .cal-today-btn{border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:600;color:var(--ink-700);cursor:pointer;background:#fff;}
+  .cal-today-btn:hover{border-color:var(--green-600);}
+
+  table.cal-grid{width:100%;border-collapse:collapse;table-layout:fixed;}
+  table.cal-grid th{font-size:10.5px;color:var(--ink-500);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding-bottom:10px;}
+  table.cal-grid td{padding:3px;height:74px;vertical-align:top;}
+  .day-cell{width:100%;height:100%;border-radius:10px;padding:7px 8px;cursor:pointer;border:1.5px solid transparent;transition:border-color .12s ease;position:relative;}
+  .day-cell:hover{border-color:var(--green-600);}
+  .day-cell.selected{border-color:var(--green-800);box-shadow:0 0 0 2px var(--green-100);}
+  .day-cell.today .day-num{background:var(--green-800);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;}
+  .day-cell.empty{cursor:default;}
+  .day-num{font-size:12px;font-weight:700;color:var(--ink-700);}
+  .day-cell.other-month .day-num{color:var(--ink-300);}
+  .day-badges{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;}
+  .day-paper-dot{font-size:8.5px;font-weight:800;padding:1px 5px;border-radius:4px;}
+  .day-count{position:absolute;bottom:6px;right:8px;font-size:9.5px;font-weight:700;color:var(--ink-500);}
+
+  .cal-legend{display:flex;gap:16px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);flex-wrap:wrap;}
+  .cal-legend .item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-500);}
+  .cal-legend .sw{width:12px;height:12px;border-radius:4px;}
+
+  /* ===== day detail panel ===== */
+  .detail-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 22px;position:sticky;top:22px;}
+  .detail-date{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .detail-sub{font-size:11.5px;color:var(--ink-500);margin-bottom:16px;}
+  .detail-empty{text-align:center;padding:30px 10px;color:var(--ink-500);font-size:12.5px;}
+  .detail-empty svg{width:30px;height:30px;color:var(--ink-300);margin-bottom:10px;}
+  .detail-answer{background:#fbfbf9;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .detail-answer:last-child{margin-bottom:0;}
+  .da-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .da-ptag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;}
+  .da-score{margin-left:auto;font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;}
+  .da-subtopic{font-size:12.5px;font-weight:700;color:var(--ink-900);}
+  .da-subject{font-size:10.5px;color:var(--ink-500);margin-top:2px;}
+  .da-chev{position:absolute;top:12px;right:14px;color:var(--ink-300);transition:transform .15s ease;}
+  .detail-answer{position:relative;cursor:pointer;}
+  .detail-answer.expanded .da-chev{transform:rotate(90deg);}
+  .da-expand{max-height:0;overflow:hidden;transition:max-height .2s ease;}
+  .detail-answer.expanded .da-expand{max-height:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+  .da-qlabel{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--green-700);margin-bottom:5px;}
+  .da-qtext{font-size:12px;line-height:1.5;color:var(--ink-900);margin-bottom:10px;}
+  .da-demand{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+  .da-demand-item{font-size:11px;line-height:1.4;display:flex;gap:6px;color:var(--ink-700);}
+  .da-demand-item.missing{color:var(--red);}
+  .da-demand-item.partial{color:#8a6212;}
+  .da-section{margin-top:10px;}
+  .da-section-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-500);margin-bottom:5px;}
+  .da-callout{background:var(--green-50);border-left:3px solid var(--green-600);border-radius:0 6px 6px 0;padding:8px 10px;font-size:11.5px;line-height:1.5;color:var(--ink-900);}
+  .da-bullets{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;}
+  .da-bullets li{font-size:11px;line-height:1.5;color:var(--ink-700);list-style:none;padding-left:12px;position:relative;}
+  .da-bullets li::before{content:'';position:absolute;left:0;top:6px;width:4px;height:4px;border-radius:50%;background:var(--green-600);}
+  .da-kwrow{display:flex;flex-wrap:wrap;gap:5px;}
+  .da-kw{background:#eef3ee;color:var(--green-800);font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;}
+  .da-ink{background:var(--red-50);border:1px dashed #e3b3a5;border-radius:8px;padding:8px 10px;}
+  .da-ink-row{font-size:11px;line-height:1.5;margin-bottom:5px;}
+  .da-ink-row:last-child{margin-bottom:0;}
+  .da-ink-row .strike{color:var(--red);font-weight:600;text-decoration:line-through;text-decoration-color:#e3b3a5;}
+  .da-ink-row .arrow-fix{color:var(--green-800);}
+  .da-topper{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.5;color:#5c470f;}
+  .da-fb{display:flex;flex-direction:column;gap:5px;}
+  .da-fb-row{font-size:11px;line-height:1.4;}
+  .da-fb-row b{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;}
+  .da-learning{background:var(--green-900);color:#eaf6ee;border-radius:8px;padding:9px 11px;font-size:11.5px;line-height:1.5;}
+
+  .streak-mini{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+  .streak-mini-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-500);margin-bottom:10px;}
+  .countdown-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:12px;}
+  .countdown-row:not(:last-child){border-bottom:1px solid var(--line);}
+  .countdown-row .cd-label{color:var(--ink-700);}
+  .countdown-row .cd-val{font-weight:800;color:var(--green-800);}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        A streak is just consistency with a scoreboard.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <h1>Calendar</h1>
+      <p>Every day you wrote — and every day you didn't — mapped from your real answer log.</p>
+    </div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="layout">
+      <div class="cal-card">
+        <div class="cal-head">
+          <div class="cal-nav">
+            <div class="cal-nav-btn" id="prevMonth">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <div class="cal-month-title" id="monthTitle"></div>
+            <div class="cal-nav-btn" id="nextMonth">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+          <div class="cal-today-btn" id="todayBtn">Today</div>
+        </div>
+        <table class="cal-grid">
+          <thead><tr id="calHeaderRow"></tr></thead>
+          <tbody id="calBody"></tbody>
+        </table>
+        <div class="cal-legend">
+          <div class="item"><div class="sw" style="background:#eef1ee;"></div>No answer</div>
+          <div class="item"><div class="sw" style="background:#cdeada;"></div>1 answer</div>
+          <div class="item"><div class="sw" style="background:#7cc298;"></div>2 answers</div>
+          <div class="item"><div class="sw" style="background:var(--green-700);"></div>3+ answers</div>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <div id="dayDetail"></div>
+        <div class="streak-mini">
+          <div class="streak-mini-title">Exam Countdown</div>
+          <div class="countdown-row"><span class="cd-label">Prelims 2027</span><span class="cd-val" id="cdPrelims">—</span></div>
+          <div class="countdown-row"><span class="cd-label">Mains 2027</span><span class="cd-val" id="cdMains">—</span></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Same real 12-answer dataset used across the app.
+============================================================ */
+const ANSWERS = [
+{
+  date:"2026-08-15", paper:"GS1", subject:"Modern Indian History", subtopic:"Indian Freedom Struggle — Cultural Awakening and Nationalism",
+  question:"India's freedom struggle was not merely a political movement but also a cultural awakening that transformed art, literature, music and symbols into instruments of nationalism. Discuss.",
+  marks:4.5, max:15, directive:"Discuss",
+  demand:[{status:"done",text:"Explain cultural awakening in freedom struggle"},{status:"done",text:"Examine role of art in nationalism"},{status:"done",text:"Analyse contribution of literature"},{status:"done",text:"Evaluate use of music and symbols"}],
+  bestIntro:"Cultural nationalism served as the vital bedrock of India's freedom struggle, converting art and ideas into powerful instruments of anti-colonial resistance.",
+  valueAdditions:["Bengal School of Art — Abanindranath Tagore's Bharat Mata painting broke away from European academic style to foster indigenous aesthetic nationalism.","Anandamath — Bankim Chandra Chatterjee's novel provided the immortal anthem Vande Mataram, galvanising the Swadeshi movement across Bengal and beyond.","Charkha and Khadi — Mahatma Gandhi transformed everyday spinning into a powerful symbol of economic self-reliance and mass political mobilisation."],
+  keywords:["Cultural Nationalism","Indigenous Aesthetic Revival","Subaltern Mobilisation"],
+  examples:["Swadeshi Movement (1905) — Boycott of British goods was accompanied by the mass singing of Vande Mataram and propagation of indigenous art and literature."],
+  bestConclusion:"This cultural renaissance laid the foundational ethos of modern India, uniting diverse populations into a shared national identity.",
+  improvements:[{issue:"Historical inaccuracies", fix:"Avoid citing ancient epochs like Amravati art as direct freedom struggle instruments."},{issue:"Lack of regional literary figures", fix:"Incorporate vernacular stalwarts like Subramania Bharati."}],
+  topperEdge:"Explicitly link how cultural symbols transformed elite political movements into a broad-based mass upsurge.",
+  feedback:{strength:"Good thematic domain coverage.", gap:"Factual inaccuracies and superficial symbol listing.", fix:"Integrate precise historical freedom-struggle examples."},
+  learning:"Ground every cultural argument in specific freedom-struggle personalities and movements."
+},
+{
+  date:"2026-08-14", paper:"GS2", subject:"International Relations", subtopic:"India's Neighbourhood Policy",
+  question:"Power trade is emerging as an important instrument of India's neighbourhood diplomacy. Examine how electricity cooperation with Bangladesh, Nepal and Bhutan can advance India's strategic and economic interests while promoting regional integration.",
+  marks:4.5, max:15, directive:"Examine",
+  demand:[{status:"done",text:"Define / explain power trade as diplomacy instrument"},{status:"partial",text:"Examine strategic interests advancement"},{status:"partial",text:"Examine economic interests advancement"},{status:"missing",text:"Include country-specific examples"}],
+  bestIntro:"Energy diplomacy acts as a vital catalyst in transforming geographic proximity into strategic economic interdependence within South Asia.",
+  valueAdditions:["SAARC Framework Agreement for Energy Cooperation — Provides the institutional foundation for regional power grid integration and multilateral energy trade.","Cross-border transmission lines — Physically anchors bilateral ties, such as the Dhalkebar-Muzaffarpur link connecting India and Nepal.","Bilateral hydropower pacts — Institutionalises long-term energy security, as seen in India's engagement with Bhutan."],
+  keywords:["Energy interdependence","Grid interconnection","Strategic autonomy"],
+  examples:["Mangdechhu hydroelectric project — Demonstrates how Bhutan-India energy cooperation strengthens bilateral economic ties and ensures reliable clean energy.","Maitree Super Thermal Power Project — Illustrates cross-border power supply to Bangladesh."],
+  bestConclusion:"Advancing cross-border grid integration fosters sustainable prosperity and cements India's vision of a stable, interconnected South Asia.",
+  improvements:[{issue:"Generic assertions", fix:"Integrate specific country projects and bilateral transmission lines."},{issue:"Missing economic data", fix:"Include investment scales or revenue generation figures."}],
+  topperEdge:"Integrate specific bilateral projects, transmission capacities, and multilateral frameworks for each country instead of generic analytical points.",
+  feedback:{strength:"Good conceptual structure.", gap:"Lacks country-specific examples.", fix:"Add concrete bilateral projects."},
+  learning:"Substantiate every diplomatic argument with a concrete bilateral project."
+},
+{
+  date:"2026-08-13", paper:"GS2", subject:"Polity and Governance", subtopic:"Civil Society and NGOs Regulation",
+  question:"The FCRA Amendment Bill, 2026 seeks to strengthen state oversight over foreign-funded organisations while raising concerns about civil society autonomy. Critically examine.",
+  marks:6.5, max:15, directive:"Critically examine",
+  demand:[{status:"done",text:"Examine state oversight strengthening provisions"},{status:"partial",text:"Analyze concerns about civil society autonomy"},{status:"done",text:"Provide critical evaluation balancing perspectives"}],
+  bestIntro:"Balancing national security imperatives with civil society autonomy remains a defining challenge for modern democratic governance.",
+  valueAdditions:["Article 19(1)(c) — Guarantees freedom to form associations, which must be balanced reasonably under Article 19(4) for sovereignty and integrity.","Supreme Court guidelines in IAFAR v. Union of India — Emphasizes that regulation of foreign funds must not stifle legitimate human rights advocacy."],
+  keywords:["Civil society autonomy","National security oversight","Compliance burden"],
+  examples:["Aarey forest protest controversy — Highlights concerns regarding potential misuse of regulatory mechanisms to curb environmental activism."],
+  bestConclusion:"Harmonizing state security with a vibrant civil society ensures resilient democratic institutions.",
+  improvements:[{issue:"Specific 2026 provisions", fix:"Integrate concrete regulatory mechanisms introduced in the bill."}],
+  topperEdge:"Propose a risk-based compliance framework that subjects high-risk foreign funding to strict scrutiny while streamlining routine welfare NGOs.",
+  feedback:{strength:"Balanced arguments.", gap:"Lacks specific provisions.", fix:"Add concrete regulatory details."},
+  learning:"Ground general arguments in specific institutional mechanisms and legal provisions."
+},
+{
+  date:"2026-08-12", paper:"GS3", subject:"Economy", subtopic:"MSME Sector and Industrial Clusters",
+  question:"The next phase of India's MSME growth lies not merely in creating more enterprises, but in clustering them. Examine how a cluster-based approach can enhance the productivity and global competitiveness of Indian MSMEs.",
+  marks:7, max:15, directive:"Examine",
+  demand:[{status:"done",text:"Define / explain cluster-based approach"},{status:"done",text:"Examine productivity enhancement"},{status:"done",text:"Examine global competitiveness enhancement"}],
+  bestIntro:"Reimagining India's 'invisible giant' MSME sector requires shifting from dispersed expansion to strategic agglomeration and industrial clustering.",
+  valueAdditions:["SFURTI Scheme — Provides financial assistance for traditional industry clusters, strengthening sustainable livelihoods and rural manufacturing.","Common Facility Centres (CFCs) — Enables resource pooling for testing, design, and processing, drastically reducing capital expenditure for individual MSMEs.","TReDS platform — Resolves acute working capital bottlenecks through digital discounting of trade receivables."],
+  keywords:["Economies of agglomeration","Global Value Chains (GVCs)","Productivity trap"],
+  examples:["Tiruppur textile cluster — Demonstrates how shared infrastructure and export networks drive major global apparel competitiveness.","Economic Survey — Highlights that MSMEs contribute roughly 31% to India's GDP and nearly half of total exports."],
+  bestConclusion:"Scaling MSME clusters will transform India into a resilient, globally integrated manufacturing hub.",
+  improvements:[{issue:"Generic productivity points", fix:"Ground each advantage in concrete industrial agglomeration mechanisms."}],
+  topperEdge:"Incorporate specific institutional mechanisms like Common Facility Centres to explain how clustering practically reduces operational overheads.",
+  feedback:{strength:"Good stakeholder framework.", gap:"Lacks concrete examples.", fix:"Add industrial clusters."},
+  learning:"Ground general economic arguments in verified cluster-specific case studies."
+},
+{
+  date:"2026-08-11", paper:"GS2", subject:"Social Justice", subtopic:"Vulnerable Sections and Affirmative Action",
+  question:"The demand for Scheduled Caste status for Dalit Christians raises complex questions of caste discrimination, religious freedom and affirmative action. Critically examine the constitutional and socio-legal dimensions of this debate.",
+  marks:5, max:15, directive:"Critically examine",
+  demand:[{status:"done",text:"Explain context of Dalit Christian demands"},{status:"partial",text:"Critically examine constitutional dimensions"},{status:"done",text:"Examine socio-legal arguments for and against"},{status:"partial",text:"Suggest a balanced way forward"}],
+  bestIntro:"Affirmative action aims to achieve substantive equality, yet excluding religious converts from Scheduled Caste benefits creates a complex socio-legal dilemma.",
+  valueAdditions:["Article 341 — Highlights the constitutional restriction limiting Scheduled Caste status exclusively to Hindus, Sikhs, and Buddhists through the 1950 Presidential Order.","Ranganath Misra Commission (2007) — Recommended extending Scheduled Caste status to Dalit Christians and Dalit Muslims to address continuing social discrimination."],
+  keywords:["Substantive Equality","Constitutional Morality","Elite Capture"],
+  examples:["Kerala church segregation — Demonstrates the persistence of caste-based discrimination and separate seating arrangements even within Christian denominations."],
+  bestConclusion:"Balancing religious neutrality with substantive equality is vital to uphold fraternity and constitutional justice for all vulnerable citizens.",
+  improvements:[{issue:"Article 341 context", fix:"Explicitly cite the 1950 Presidential Order restricting SC status to specific religions."},{issue:"Resource dilution argument", fix:"Discuss concerns regarding shrinking quota share."}],
+  topperEdge:"Explicitly examine the interplay between Article 25 (religious freedom) and Article 14/15 (equality) alongside the 1950 Presidential Order.",
+  feedback:{strength:"Balanced arguments.", gap:"Missing legal provisions.", fix:"Cite Article 341 and reports."},
+  learning:"Integrate specific constitutional articles and commission reports to strengthen socio-legal debates."
+},
+{
+  date:"2026-08-10", paper:"GS3", subject:"Economy", subtopic:"Infrastructure: Ports and Digital Governance",
+  question:"E-Samudra represents an important step towards digital transformation of India's maritime administration. Examine its significance in improving maritime governance and discuss the challenges in building an integrated digital maritime ecosystem.",
+  marks:6.5, max:15, directive:"Examine",
+  demand:[{status:"done",text:"Examine significance of E-Samudra in maritime governance"},{status:"done",text:"Discuss challenges in digital maritime ecosystem"},{status:"partial",text:"Provide forward-looking perspective"}],
+  bestIntro:"Digital transformation in maritime administration is critical for streamlining regulatory workflows and enhancing India's blue economy potential.",
+  valueAdditions:["Sagarmala Programme — Highlights how port-led development requires robust digital infrastructure for seamless logistics.","National Logistics Policy — Demonstrates integration of multimodal transport through the Unified Logistics Interface Platform.","Draft Indian Ports Bill — Provides the legislative backdrop for modernizing port administration."],
+  keywords:["Single-window clearance","Interoperability","Digital maritime ecosystem"],
+  examples:["Sagarmala Port Community System — Demonstrates how electronic document exchange reduces transaction time and logistics costs."],
+  bestConclusion:"Leveraging digital governance in maritime administration will anchor India's transition into a globally competitive maritime hub by 2047.",
+  improvements:[{issue:"Inter-agency coordination", fix:"Explain how single-window clearance reduces overlaps between Customs and Port Authorities."},{issue:"Digital divide", fix:"Address technology and literacy gaps faced by small fishermen."}],
+  topperEdge:"Integrate specific governance mechanisms like single-window clearance and interoperability with global shipping standards.",
+  feedback:{strength:"Excellent multi-stakeholder coverage.", gap:"Lacks specific governance depth.", fix:"Add single-window clearance mechanisms."},
+  learning:"Link administrative portals directly to specific governance reforms."
+},
+{
+  date:"2026-08-08", paper:"GS3", subject:"Economy", subtopic:"Digital Payments and Financial Inclusion",
+  question:"UPI has emerged as a critical Digital Public Infrastructure, but its zero-charge model raises concerns over the financial sustainability of the payments ecosystem. Examine whether UPI should continue to remain free.",
+  marks:6.5, max:15, directive:"Examine",
+  demand:[{status:"done",text:"Explain UPI zero-charge model and DPI significance"},{status:"partial",text:"Examine arguments for continuing free UPI"},{status:"partial",text:"Examine arguments against keeping UPI free"},{status:"done",text:"Suggest balanced way forward"}],
+  bestIntro:"As India's UPI transforms global digital payments, its zero-MDR model sparks a critical debate on balancing financial inclusion with ecosystem sustainability.",
+  valueAdditions:["RBI Discussion Paper on Charges in Payment Systems (2022) — Highlights the regulatory debate on balancing consumer affordability with merchant discount rates.","Payments Infrastructure Development Fund (PIDF) — Deployed by RBI to subsidize acceptance infrastructure without imposing direct user charges.","Brazil's PIX model — Demonstrates how a free instant payment system can successfully levy commercial merchant fees."],
+  keywords:["Zero-MDR model","Merchant Discount Rate","Financial sustainability"],
+  examples:["NPCI transaction data — UPI crossed over 100 billion transactions in FY24, showcasing massive adoption that strains backend banking infrastructure."],
+  bestConclusion:"Balancing financial inclusion with viable merchant revenue models will ensure the long-term resilience of India's digital payments ecosystem.",
+  improvements:[{issue:"Lack of quantitative data", fix:"Cite transaction volumes and bank maintenance costs."},{issue:"Missing international comparison", fix:"Reference tiered merchant pricing models like Singapore's PayNow."}],
+  topperEdge:"Integrate specific economic trade-offs between bank infrastructure costs and consumer financial inclusion benefits using structured stakeholder analysis.",
+  feedback:{strength:"Balanced arguments.", gap:"Lacks quantitative data.", fix:"Add cost metrics."},
+  learning:"Substantiate payment ecosystem debates with concrete cost-revenue metrics."
+},
+{
+  date:"2026-08-05", paper:"GS1", subject:"Geography", subtopic:"Climatology and Upper Air Phenomena",
+  question:"The recent incidents of severe in-flight turbulence have drawn attention to upper air phenomena and their growing implications for aviation safety. Discuss the major upper air atmospheric phenomena and examine their significance for weather forecasting, disaster management and aviation.",
+  marks:5.5, max:15, directive:"Discuss and Examine",
+  demand:[{status:"done",text:"Define upper air phenomena"},{status:"done",text:"Discuss major atmospheric phenomena"},{status:"partial",text:"Examine significance for weather forecasting"},{status:"partial",text:"Examine significance for aviation safety"}],
+  bestIntro:"Upper air phenomena operating above tropospheric boundaries fundamentally dictate synoptic weather systems and contemporary aviation resilience.",
+  valueAdditions:["Clear Air Turbulence (CAT) — Highlights micro-scale upper air hazards occurring near jet stream boundaries without visual warning.","Doppler Weather Radar networks — Explains real-time detection mechanisms used for advanced wind shear tracking.","ICAO Annex provisions — Emphasizes international standard safety protocols for hazard reporting."],
+  keywords:["Jet Streams","Wind Shear","Tropopause Dynamics"],
+  examples:["Air India Flight turbulence incident — Demonstrates sudden vertical displacement risks caused by unpredicted upper air turbulence.","IMD and WMO collaboration — Shows institutional mechanisms for cross-border meteorological data sharing."],
+  bestConclusion:"Integrating advanced upper air monitoring systems ensures robust climate resilience and safe global aviation networks.",
+  improvements:[{issue:"Scientific precision", fix:"Replace vague climatic impacts with concrete atmospheric mechanisms like wind shear."},{issue:"Aviation depth", fix:"Detail specific operational hazards such as aircraft structural stress."}],
+  topperEdge:"Incorporate precise meteorological terminology such as vertical wind shear and tropopause folding while linking phenomena directly to aviation risk.",
+  feedback:{strength:"Good structured table format.", gap:"Inaccurate scientific mechanisms.", fix:"Enhance meteorological precision."},
+  learning:"Integrate rigorous scientific definitions for technical geography concepts."
+},
+{
+  date:"2026-08-01", paper:"GS2", subject:"Governance", subtopic:"Social Media, Digital Power and Democratic Governance",
+  question:"The rise of social media platforms has created a new governance challenge where private digital power increasingly intersects with sovereign state authority. Examine the challenges this poses to democratic governance. Suggest measures to ensure accountable digital governance.",
+  marks:4.5, max:15, directive:"Examine",
+  demand:[{status:"partial",text:"Examine challenges posed by private digital power to democracy"},{status:"partial",text:"Suggest measures for accountable digital governance"}],
+  bestIntro:"Unchecked private digital power increasingly rivals sovereign authority, testing the resilience of modern democratic governance.",
+  valueAdditions:["Digital Personal Data Protection Act (DPDP Act) — Establishes statutory obligations for processing digital data, strengthening sovereign authority.","EU Digital Services Act (DSA) — Provides a global benchmark for regulating algorithmic transparency and platform accountability.","Srikrishna Committee Report — Emphasizes data sovereignty and balancing innovation with citizen privacy."],
+  keywords:["Data sovereignty","Algorithmic bias","Platform accountability"],
+  examples:["Facebook Cambridge Analytica scandal — Demonstrates how private digital platforms can manipulate voter behavior.","IT Rules 2021 — India's framework establishing grievance redressal mechanisms for intermediaries."],
+  bestConclusion:"Balancing technological innovation with robust regulatory frameworks is vital to safeguard democratic integrity in the digital age.",
+  improvements:[{issue:"Weak examples", fix:"Replace non-contextual examples with precise platform governance case studies."},{issue:"Missing regulatory frameworks", fix:"Explicitly cite statutory measures like IT Rules or DPDP Act."}],
+  topperEdge:"Integrate structured governance dimensions such as data sovereignty, algorithmic transparency, and co-regulation models.",
+  feedback:{strength:"Broad multidimensional coverage.", gap:"Generic examples and solutions.", fix:"Cite precise statutory frameworks."},
+  learning:"Ground every digital governance argument in concrete regulatory acts and real platform challenges."
+},
+{
+  date:"2026-07-20", paper:"GS3", subject:"Science and Technology", subtopic:"Space Technology — Vikram-1",
+  question:"Examine the significance of the successful launch of Skyroot Aerospace's Vikram-1 mission for India's space ecosystem. What challenges must India address to emerge as a global leader in the commercial space sector?",
+  marks:5, max:15, directive:"Examine",
+  demand:[{status:"partial",text:"Examine significance of Vikram-1 mission for India's space ecosystem"},{status:"partial",text:"Identify challenges India must address to become a global leader"}],
+  bestIntro:"Vikram-1 marks India's transition from a state-dominated space program to a vibrant private-led commercial space ecosystem.",
+  valueAdditions:["IN-SPACe — Acts as a single-window autonomous nodal agency to promote, authorize, and supervise private space activities.","Indian Space Policy 2023 — Delineates clear operational roles for ISRO, NSIL, and private entities.","Draft Space Activities Bill — Provides essential legal clarity on national jurisdiction and liability."],
+  keywords:["Commercial space sector","Technology transfer","Space economy share"],
+  examples:["Global space economy share — India currently accounts for roughly 2% of the global $440 billion space market.","Venture capital gap — Indian space tech startups receive fractionally lower VC funding than US counterparts."],
+  bestConclusion:"Unlocking private dynamism through robust policy and funding will cement India's position as a global commercial space powerhouse.",
+  improvements:[{issue:"Generic challenge points", fix:"Replace generic bureaucratic points with specific infrastructure and funding gaps."},{issue:"Missing technological depth", fix:"Mention specific propulsion validation like carbon-composite motor casings."}],
+  topperEdge:"Articulate how private launch vehicles democratize access while allowing ISRO to focus on deep-space exploration.",
+  feedback:{strength:"Good demographic focus.", gap:"Missing commercial challenges.", fix:"Add regulatory and infrastructure depth."},
+  learning:"Integrate specific regulatory frameworks and funding data into technology answers."
+},
+{
+  date:"2026-07-15", paper:"GS2", subject:"International Relations / Geopolitics", subtopic:"Maritime Security and Global Chokepoints",
+  question:"Control over strategic maritime chokepoints increasingly shapes global power politics. Examine this statement with reference to the U.S. decision to impose a 20% toll on shipping through the Strait of Hormuz and discuss its implications for global trade and India's strategic interests.",
+  marks:4.5, max:15, directive:"Examine",
+  demand:[{status:"partial",text:"Examine chokepoint control in global power politics"},{status:"partial",text:"Analyse U.S. Strait of Hormuz toll decision"},{status:"partial",text:"Discuss implications for India's strategic interests"}],
+  bestIntro:"Chokepoint geopolitics transforms narrow sea lanes into instruments of leverage, weaponizing geography for strategic dominance.",
+  valueAdditions:["UNCLOS Article 38 — Governs transit passage through straits used for international navigation, limiting unilateral toll imposition.","Chabahar Port — Serves as India's strategic alternative to bypass volatile regional bottlenecks in West Asia.","SAGAR Vision — Guides India's maritime security engagement in the Indian Ocean."],
+  keywords:["Chokepoint diplomacy","Geographic leverage","Energy security"],
+  examples:["Strait of Hormuz dependency — Approximately 30% of global petroleum liquid transit passes through this vital passage.","India's crude oil imports — India imports nearly 85% of its oil, making uninterrupted Persian Gulf transit critical."],
+  bestConclusion:"Ensuring open sea lanes requires multilateral maritime cooperation upholding international maritime law and free trade principles.",
+  improvements:[{issue:"Energy security analysis", fix:"Explicitly integrate India's massive crude import dependency into the evaluation."},{issue:"Legal framework missing", fix:"Reference UNCLOS norms regarding freedom of navigation."}],
+  topperEdge:"Explicitly link unilateral chokepoint tolls to violations of UNCLOS transit passage rights while detailing India's energy vulnerabilities.",
+  feedback:{strength:"Good regional awareness.", gap:"Lacks UNCLOS and energy data.", fix:"Integrate legal norms and statistics."},
+  learning:"Ground strategic arguments in international law and hard data."
+},
+{
+  date:"2026-07-11", paper:"GS2", subject:"Polity and Governance", subtopic:"Judiciary and Accountability",
+  question:"\"Judicial independence cannot become a shield against judicial accountability.\" Examine this statement in light of the constitutional process for removing judges and the accountability concerns raised by a judge resigning during pending removal proceedings.",
+  marks:3, max:10, directive:"Examine",
+  demand:[{status:"partial",text:"Examine balance between independence and accountability"},{status:"partial",text:"Analyze constitutional removal process for judges"},{status:"partial",text:"Evaluate concerns of resignation during removal proceedings"}],
+  bestIntro:"Judicial independence is a structural prerequisite for constitutional democracy, but it cannot morph into an absolute immunity shielding misconduct.",
+  valueAdditions:["Articles 124(4) and 218 — Outline the rigid constitutional impeachment process requiring special majority for proved misbehaviour.","Judicial Standards and Accountability Bill — Highlights the institutional gap in handling misconduct short of removal.","Justice C.S. Karnan case (2017) — Demonstrates that judicial immunity does not bar contempt or criminal accountability."],
+  keywords:["Constitutional morality","Impeachment procedure","Proved misbehaviour"],
+  examples:["Justice V. Ramaswami inquiry — First major impeachment motion in India, establishing precedents for parliamentary oversight."],
+  bestConclusion:"Balancing institutional autonomy with robust accountability mechanisms is vital to preserve public trust in constitutional governance.",
+  improvements:[{issue:"Removal process analysis", fix:"Explicitly detail the multi-stage parliamentary impeachment mechanism."},{issue:"Resignation loophole", fix:"Examine how resignation during inquiry frustrates parliamentary scrutiny."}],
+  topperEdge:"Explicitly link the theoretical balance of powers with concrete procedural loopholes exposed by mid-inquiry resignations.",
+  feedback:{strength:"Good conceptual grasp.", gap:"Lacks constitutional article backing.", fix:"Detail impeachment provisions and removal hurdles."},
+  learning:"Integrate specific constitutional articles and removal procedures into judicial governance answers."
+},
+];
+ANSWERS.forEach((a,i)=>{ a.score = a.marks/a.max*10; a.id = 'ans_'+i; });
+
+const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
+function scoreTier(s){ return s>=6.5?{bg:'#e6f4ea',fg:'#1c5c30'}:s>=4.5?{bg:'#fbf5e8',fg:'#8a6212'}:{bg:'#fbf1ee',fg:'#b3402c'}; }
+
+const TODAY = new Date('2026-08-16'); // matches "today" used consistently across AnswerOS
+const answersByDate = {};
+ANSWERS.forEach(a=>{ (answersByDate[a.date] = answersByDate[a.date]||[]).push(a); });
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html',true],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- streak calc ---------- */
+function computeStreaks(){
+  const uniqueDates = Object.keys(answersByDate).sort();
+  let longest=1, cur=1;
+  for(let i=1;i<uniqueDates.length;i++){
+    const prev = new Date(uniqueDates[i-1]), curD = new Date(uniqueDates[i]);
+    if((curD-prev)/86400000 === 1){ cur++; longest=Math.max(longest,cur); } else { cur=1; }
+  }
+  const desc = [...uniqueDates].reverse();
+  let streak=0; let expected = new Date(desc[0]);
+  for(const d of desc){
+    if(d === expected.toISOString().slice(0,10)){ streak++; expected.setDate(expected.getDate()-1); } else break;
+  }
+  return {current:streak, longest, activeDays:uniqueDates.length};
+}
+
+/* ---------- mini stats ---------- */
+function renderMiniStats(){
+  const {current, longest, activeDays} = computeStreaks();
+  const thisMonthCount = ANSWERS.filter(a=>{
+    const d = new Date(a.date);
+    return d.getFullYear()===TODAY.getFullYear() && d.getMonth()===TODAY.getMonth();
+  }).length;
+  document.getElementById('ministats').innerHTML = `
+    <div class="ministat"><div class="mv">${activeDays}</div><div class="ml">Active Days</div></div>
+    <div class="ministat"><div class="mv">${current}</div><div class="ml">Current Streak</div></div>
+    <div class="ministat"><div class="mv">${longest}</div><div class="ml">Longest Streak</div></div>
+    <div class="ministat flag"><div class="mv">${thisMonthCount}</div><div class="ml">This Month's Answers</div></div>
+  `;
+}
+renderMiniStats();
+
+/* ---------- countdown ---------- */
+function daysBetween(a,b){ return Math.round((b-a)/86400000); }
+document.getElementById('cdPrelims').textContent = daysBetween(TODAY, new Date('2027-05-23')) + ' days';
+document.getElementById('cdMains').textContent = daysBetween(TODAY, new Date('2027-08-20')) + ' days';
+
+/* ---------- calendar state ---------- */
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let viewYear = 2026, viewMonth = 7; // August 2026 — most recent real data
+let selectedDate = '2026-08-15'; // default to most recent logged answer
+
+document.getElementById('calHeaderRow').innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<th>${d}</th>`).join('');
+
+function dateKey(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function renderCalendar(){
+  document.getElementById('monthTitle').textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+
+  const first = new Date(viewYear, viewMonth, 1);
+  const startDow = (first.getDay()+6)%7; // Mon=0
+  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+  let html = '';
+  let dayCounter = 1 - startDow;
+
+  for(let w=0; w<6; w++){
+    html += '<tr>';
+    for(let d=0; d<7; d++){
+      let cellYear=viewYear, cellMonth=viewMonth, cellDay=dayCounter, otherMonth=false;
+      if(dayCounter<1){ cellMonth=viewMonth-1; cellDay=daysInPrevMonth+dayCounter; otherMonth=true; if(cellMonth<0){cellMonth=11;cellYear--;} }
+      else if(dayCounter>daysInMonth){ cellMonth=viewMonth+1; cellDay=dayCounter-daysInMonth; otherMonth=true; if(cellMonth>11){cellMonth=0;cellYear++;} }
+
+      const key = dateKey(cellYear, cellMonth, cellDay);
+      const dayAnswers = answersByDate[key] || [];
+      const count = dayAnswers.length;
+      const bg = count===0?'transparent':count===1?'#cdeada':count===2?'#7cc298':'#1f7a3d';
+      const isToday = key === TODAY.toISOString().slice(0,10);
+      const isSelected = key === selectedDate;
+
+      const badges = dayAnswers.slice(0,3).map(a=>{
+        const col = PAPER_COLORS[a.paper]||'#888';
+        return `<span class="day-paper-dot" style="background:${col}2a;color:${col};">${a.paper}</span>`;
+      }).join('');
+
+      html += `<td>
+        <div class="day-cell ${otherMonth?'other-month':''} ${isToday?'today':''} ${isSelected?'selected':''}" data-key="${key}" style="background:${otherMonth?'transparent':bg+(count>0?'':'')};${count>0&&!otherMonth?`background:${bg}${count>=3?'':'33'};`:''}">
+          <span class="day-num">${cellDay}</span>
+          <div class="day-badges">${otherMonth?'':badges}</div>
+          ${count>0 && !otherMonth ? `<span class="day-count">${count}</span>` : ''}
+        </div>
+      </td>`;
+      dayCounter++;
+    }
+    html += '</tr>';
+  }
+  document.getElementById('calBody').innerHTML = html;
+
+  document.querySelectorAll('.day-cell:not(.empty)').forEach(cell=>{
+    cell.addEventListener('click', ()=>{
+      selectedDate = cell.dataset.key;
+      renderCalendar();
+      renderDayDetail();
+    });
+  });
+}
+
+let expandedAnswerId = null;
+
+function renderDayDetail(){
+  const dayAnswers = answersByDate[selectedDate] || [];
+  const d = new Date(selectedDate);
+  const dateLabel = d.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+
+  if(dayAnswers.length===0){
+    document.getElementById('dayDetail').innerHTML = `
+      <div class="detail-date">${dateLabel}</div>
+      <div class="detail-sub">Selected day</div>
+      <div class="detail-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        No answer logged this day.
+      </div>
+    `;
+    return;
+  }
+
+  const answersHtml = dayAnswers.map(a=>{
+    const col = PAPER_COLORS[a.paper]||'#888';
+    const tier = scoreTier(a.score);
+    const isOpen = expandedAnswerId === a.id;
+
+    const demandHtml = a.demand.map(di=>{
+      const icon = di.status==='done'?'✓':di.status==='partial'?'!':'✕';
+      return `<div class="da-demand-item ${di.status}"><span>${icon}</span><span>${di.text}</span></div>`;
+    }).join('');
+
+    const expandHtml = isOpen ? `
+      <div class="da-expand">
+        <div class="da-qlabel">Question · ${a.directive} · ${a.marks}/${a.max} marks</div>
+        <div class="da-qtext serif">${a.question}</div>
+        <div class="da-demand">${demandHtml}</div>
+
+        <div class="da-section">
+          <div class="da-section-label">Best Introduction</div>
+          <div class="da-callout serif">${a.bestIntro}</div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Value Additions</div>
+          <ul class="da-bullets">${a.valueAdditions.map(v=>`<li>${v}</li>`).join('')}</ul>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Examples / Data</div>
+          <ul class="da-bullets">${a.examples.map(v=>`<li>${v}</li>`).join('')}</ul>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Essential Keywords</div>
+          <div class="da-kwrow">${a.keywords.map(k=>`<span class="da-kw">${k}</span>`).join('')}</div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Best Conclusion</div>
+          <div class="da-callout serif">${a.bestConclusion}</div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Missing / Extra Improvements</div>
+          <div class="da-ink">
+            ${a.improvements.map(im=>`<div class="da-ink-row"><span class="strike">${im.issue}</span> <span class="arrow-fix">→ ${im.fix}</span></div>`).join('')}
+          </div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Topper Edge</div>
+          <div class="da-topper">🏆 ${a.topperEdge}</div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-section-label">Overall Feedback</div>
+          <div class="da-fb">
+            <div class="da-fb-row"><b style="color:var(--green-700);">Strength:</b> ${a.feedback.strength}</div>
+            <div class="da-fb-row"><b style="color:var(--red);">Gap:</b> ${a.feedback.gap}</div>
+            <div class="da-fb-row"><b style="color:var(--blue);">Fix:</b> ${a.feedback.fix}</div>
+          </div>
+        </div>
+
+        <div class="da-section">
+          <div class="da-learning">💡 <b>My One Learning —</b> ${a.learning}</div>
+        </div>
+      </div>` : '';
+
+    return `<div class="detail-answer ${isOpen?'expanded':''}" data-answer-id="${a.id}">
+      <svg class="da-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      <div class="da-top">
+        <span class="da-ptag" style="background:${col}1a;color:${col};">${a.paper}</span>
+        <span class="da-score" style="background:${tier.bg};color:${tier.fg};">${a.score.toFixed(1)}/10</span>
+      </div>
+      <div class="da-subtopic">${a.subtopic}</div>
+      <div class="da-subject">${a.subject}</div>
+      ${expandHtml}
+    </div>`;
+  }).join('');
+
+  document.getElementById('dayDetail').innerHTML = `
+    <div class="detail-date">${dateLabel}</div>
+    <div class="detail-sub">${dayAnswers.length} answer${dayAnswers.length>1?'s':''} logged</div>
+    ${answersHtml}
+  `;
+
+  document.querySelectorAll('[data-answer-id]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.dataset.answerId;
+      expandedAnswerId = expandedAnswerId === id ? null : id;
+      renderDayDetail();
+    });
+  });
+}
+
+document.getElementById('prevMonth').addEventListener('click', ()=>{
+  viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; } renderCalendar();
+});
+document.getElementById('nextMonth').addEventListener('click', ()=>{
+  viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; } renderCalendar();
+});
+document.getElementById('todayBtn').addEventListener('click', ()=>{
+  viewYear = TODAY.getFullYear(); viewMonth = TODAY.getMonth(); renderCalendar();
+});
+
+renderCalendar();
+renderDayDetail();
+</script>
+</body>
+</html>

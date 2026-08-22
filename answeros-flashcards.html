@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Flashcards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:130px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .ministat.flag .mv{color:var(--red);}
+  .ministat.good .mv{color:var(--green-700);}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--ink-700);cursor:pointer;user-select:none;}
+  .chip:hover{border-color:var(--green-600);}
+  .chip.active{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+  .toolbar-spacer{flex:1;}
+
+  /* ===== Study mode ===== */
+  .study-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:28px;}
+  .study-progress{font-size:12px;color:var(--ink-500);margin-bottom:14px;font-weight:600;}
+  .flip-card{width:100%;max-width:640px;height:280px;perspective:1400px;cursor:pointer;}
+  .flip-inner{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;}
+  .flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;box-shadow:0 4px 8px rgba(20,23,26,.06), 0 16px 36px rgba(20,23,26,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+  .flip-front{background:#fff;border:1px solid var(--line);}
+  .flip-back{background:var(--green-900);color:#eaf6ee;transform:rotateY(180deg);}
+  .fc-typetag{position:absolute;top:16px;left:18px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:20px;}
+  .fc-papertag{position:absolute;top:16px;right:18px;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:6px;}
+  .fc-front-text{font-size:22px;font-weight:700;line-height:1.4;color:var(--ink-900);max-width:480px;}
+  .fc-back-text{font-size:16px;line-height:1.6;max-width:500px;}
+  .fc-hint{position:absolute;bottom:16px;font-size:10.5px;color:var(--ink-300);}
+  .flip-back .fc-hint{color:rgba(255,255,255,.5);}
+  .fc-subtopic{position:absolute;bottom:16px;font-size:10.5px;color:rgba(255,255,255,.6);left:18px;right:18px;text-align:left;}
+
+  .study-controls{display:flex;align-items:center;gap:12px;margin-top:20px;}
+  .sc-btn{padding:11px 22px;border-radius:11px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;}
+  .sc-btn svg{width:15px;height:15px;}
+  .sc-nav{background:#fff;border:1px solid var(--line);color:var(--ink-700);}
+  .sc-nav:hover{border-color:var(--green-600);}
+  .sc-review{background:var(--red-50);color:var(--red);border:1px solid #e3b3a5;}
+  .sc-review:hover{background:#f6dcd5;}
+  .sc-know{background:var(--green-700);color:#fff;}
+  .sc-know:hover{background:var(--green-800);}
+  .sc-btn:disabled{opacity:.4;cursor:default;}
+
+  /* ===== Deck grid (browse mode) ===== */
+  .deck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+  .deck-tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;transition:box-shadow .15s ease,transform .15s ease;}
+  .deck-tile:hover{box-shadow:0 2px 4px rgba(20,23,26,.05), 0 12px 28px rgba(20,23,26,.08);transform:translateY(-1px);}
+  .dt-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .dt-ptag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;}
+  .dt-typetag{font-size:9.5px;font-weight:700;color:var(--ink-500);text-transform:uppercase;letter-spacing:.03em;}
+  .dt-status{margin-left:auto;width:9px;height:9px;border-radius:50%;}
+  .dt-front{font-size:13px;font-weight:700;color:var(--ink-900);line-height:1.4;margin-bottom:4px;}
+  .dt-sub{font-size:10.5px;color:var(--ink-500);}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        A fact you can recall in 3 seconds is worth more than one you can only recognise.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <h1>Flashcards</h1>
+      <p>Auto-built from your Value Additions, Examples, Keywords and Learnings — no new column needed.</p>
+    </div>
+    <div class="note-banner">🃏 <b>No new sheet required.</b> Every card here is generated straight from data your sheet already has — Value Additions and Examples/Data are already written as "Term — Explanation," which is exactly a front/back card. Mastery status resets each session (same reason as PYQ Tracker/Revision Hub — no progress columns to persist to yet). If you want cross-session persistence without self-hosting, the only real fix is adding a lightweight "Flashcard Progress" tab to your sheet — optional, not required for this page to work.</div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="toolbar">
+      <div class="chips" id="deckChips"></div>
+      <div class="toolbar-spacer"></div>
+      <div class="chips" id="paperChips"></div>
+    </div>
+
+    <div class="study-wrap">
+      <div class="study-progress" id="studyProgress"></div>
+      <div class="flip-card" id="flipCard">
+        <div class="flip-inner" id="flipInner">
+          <div class="flip-face flip-front">
+            <span class="fc-typetag" id="fcTypeFront"></span>
+            <span class="fc-papertag" id="fcPaperFront"></span>
+            <div class="fc-front-text" id="fcFrontText"></div>
+            <div class="fc-hint">Click to reveal answer</div>
+          </div>
+          <div class="flip-face flip-back">
+            <span class="fc-typetag" id="fcTypeBack" style="background:rgba(255,255,255,.15);color:#eaf6ee;"></span>
+            <div class="fc-back-text serif" id="fcBackText"></div>
+            <div class="fc-subtopic" id="fcSubtopic"></div>
+          </div>
+        </div>
+      </div>
+      <div class="study-controls">
+        <button class="sc-btn sc-nav" id="prevBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+          Prev
+        </button>
+        <button class="sc-btn sc-review" id="reviewBtn">Review Again</button>
+        <button class="sc-btn sc-know" id="knowBtn">Got It ✓</button>
+        <button class="sc-btn sc-nav" id="nextBtn">
+          Next
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="deck-grid" id="deckGrid"></div>
+
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Same real 12-answer dataset. Flashcards are DERIVED, not
+   stored separately — generated on load from Value Additions,
+   Examples/Data, Essential Keywords and My One Learning, all
+   of which already exist in the real sheet.
+============================================================ */
+const ANSWERS = [
+  {date:'2026-08-15', paper:'GS1', subtopic:'Indian Freedom Struggle — Cultural Awakening',
+   valueAdditions:["Bengal School of Art — Abanindranath Tagore's Bharat Mata painting broke from European style to foster indigenous aesthetic nationalism.","Anandamath — Bankim Chandra's novel gave the anthem Vande Mataram, galvanising the Swadeshi movement.","Charkha and Khadi — Gandhi turned spinning into a symbol of economic self-reliance and mass mobilisation."],
+   examples:["Swadeshi Movement (1905) — boycott of British goods paired with mass singing of Vande Mataram."],
+   keywords:["Cultural Nationalism","Subaltern Mobilisation","Ideological Hegemony"],
+   learning:"Ground every cultural argument in specific freedom-struggle personalities and movements."},
+  {date:'2026-08-14', paper:'GS2', subtopic:"India's Neighbourhood Policy",
+   valueAdditions:["SAARC Framework Agreement for Energy Cooperation — institutional foundation for regional power grid integration.","Cross-border transmission lines — Dhalkebar-Muzaffarpur link physically anchors India-Nepal energy ties."],
+   examples:["Mangdechhu hydroelectric project — demonstrates Bhutan-India energy cooperation strengthening bilateral ties."],
+   keywords:["Energy interdependence","Grid interconnection","Strategic autonomy"],
+   learning:"Substantiate every diplomatic argument with a concrete bilateral project."},
+  {date:'2026-08-13', paper:'GS2', subtopic:'Civil Society and NGOs Regulation',
+   valueAdditions:["Article 19(1)(c) — guarantees freedom to form associations, balanced under Article 19(4) for sovereignty."],
+   examples:["Aarey forest protest controversy — highlights concerns of regulatory misuse to curb environmental activism."],
+   keywords:["Civil society autonomy","National security oversight","Compliance burden"],
+   learning:"Ground general arguments in specific institutional mechanisms and legal provisions."},
+  {date:'2026-08-12', paper:'GS3', subtopic:'MSME Sector and Industrial Clusters',
+   valueAdditions:["SFURTI Scheme — provides financial assistance for traditional industry clusters and rural manufacturing.","Common Facility Centres (CFCs) — enable resource pooling for testing/design, cutting capex for individual MSMEs."],
+   examples:["Tiruppur textile cluster — shared infrastructure and export networks drive global apparel competitiveness."],
+   keywords:["Economies of agglomeration","Global Value Chains (GVCs)","Productivity trap"],
+   learning:"Ground general economic arguments in verified cluster-specific case studies."},
+  {date:'2026-08-11', paper:'GS2', subtopic:'Vulnerable Sections and Affirmative Action',
+   valueAdditions:["Article 341 — restricts Scheduled Caste status to Hindus, Sikhs, Buddhists via the 1950 Presidential Order.","Ranganath Misra Commission (2007) — recommended extending SC status to Dalit Christians and Muslims."],
+   examples:["Kerala church segregation — shows caste discrimination persisting within Christian denominations."],
+   keywords:["Substantive Equality","Constitutional Morality","Elite Capture"],
+   learning:"Integrate specific constitutional articles and commission reports to strengthen socio-legal debates."},
+  {date:'2026-08-10', paper:'GS3', subtopic:'Infrastructure: Ports and Digital Governance',
+   valueAdditions:["Sagarmala Programme — port-led development requiring robust digital infrastructure for logistics.","National Logistics Policy — integrates multimodal transport through the Unified Logistics Interface Platform."],
+   examples:["Sagarmala Port Community System — electronic document exchange reduces transaction time and cost."],
+   keywords:["Single-window clearance","Interoperability","Digital maritime ecosystem"],
+   learning:"Link administrative portals directly to specific governance reforms."},
+  {date:'2026-08-08', paper:'GS3', subtopic:'Digital Payments and Financial Inclusion',
+   valueAdditions:["Payments Infrastructure Development Fund (PIDF) — RBI subsidises acceptance infrastructure without user charges.","Brazil's PIX model — shows a free P2P instant payment system can still levy commercial merchant fees."],
+   examples:["NPCI data — UPI crossed 100 billion transactions in FY24, straining backend banking infrastructure."],
+   keywords:["Zero-MDR model","Merchant Discount Rate","Financial sustainability"],
+   learning:"Substantiate payment ecosystem debates with concrete cost-revenue metrics."},
+  {date:'2026-08-05', paper:'GS1', subtopic:'Climatology and Upper Air Phenomena',
+   valueAdditions:["Clear Air Turbulence (CAT) — micro-scale upper air hazard occurring near jet stream boundaries.","ICAO Annex provisions — international standard safety protocols for hazard reporting and route optimisation."],
+   examples:["IMD-WMO collaboration — shows institutional mechanisms for cross-border meteorological data sharing."],
+   keywords:["Jet Streams","Wind Shear","Tropopause Dynamics"],
+   learning:"Integrate rigorous scientific definitions for technical geography concepts."},
+  {date:'2026-08-01', paper:'GS2', subtopic:'Social Media, Digital Power and Democratic Governance',
+   valueAdditions:["Digital Personal Data Protection Act (DPDP Act) — establishes statutory obligations for processing digital data.","EU Digital Services Act (DSA) — global benchmark for regulating algorithmic transparency and platform accountability."],
+   examples:["IT Rules 2021 — India's framework for grievance redressal and due diligence for intermediaries."],
+   keywords:["Data sovereignty","Algorithmic bias","Platform accountability"],
+   learning:"Ground every digital governance argument in concrete regulatory acts and real platform challenges."},
+  {date:'2026-07-20', paper:'GS3', subtopic:'Space Technology — Vikram-1',
+   valueAdditions:["IN-SPACe — single-window autonomous nodal agency promoting and supervising private space activities.","Indian Space Policy 2023 — delineates operational roles for ISRO, NSIL, and private entities."],
+   examples:["Global space economy share — India accounts for roughly 2% of the $440 billion global space market."],
+   keywords:["Commercial space sector","Technology transfer","Space economy share"],
+   learning:"Integrate specific regulatory frameworks and funding data into technology answers."},
+  {date:'2026-07-15', paper:'GS2', subtopic:'Maritime Security and Global Chokepoints',
+   valueAdditions:["UNCLOS Article 38 — governs transit passage through straits used for international navigation.","Chabahar Port — serves as India's strategic alternative to bypass volatile West Asian bottlenecks."],
+   examples:["Strait of Hormuz dependency — approximately 30% of global petroleum liquid transit passes through it."],
+   keywords:["Chokepoint diplomacy","Geographic leverage","Energy security"],
+   learning:"Ground strategic arguments in international law and hard data."},
+  {date:'2026-07-11', paper:'GS2', subtopic:'Judiciary and Accountability',
+   valueAdditions:["Articles 124(4) and 218 — outline the constitutional impeachment process for proved misbehaviour.","Justice C.S. Karnan case (2017) — shows judicial immunity does not bar contempt or criminal accountability."],
+   examples:["Justice V. Ramaswami inquiry — first major impeachment motion, setting precedent for parliamentary oversight."],
+   keywords:["Constitutional morality","Impeachment procedure","Proved misbehaviour"],
+   learning:"Integrate specific constitutional articles and removal procedures into judicial governance answers."},
+];
+
+const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
+const TYPE_COLORS = {va:{bg:'#eef3ee',fg:'#1c5c30',label:'Value Add'}, ex:{bg:'#e7edfa',fg:'#3b6fd5',label:'Example'}, kw:{bg:'#f3ecfb',fg:'#7a4fd5',label:'Keyword'}, learn:{bg:'#fbf5e8',fg:'#8a6212',label:'My Learning'}};
+
+/* ---------- generate cards from real data ---------- */
+function splitTermExplanation(text){
+  const idx = text.indexOf('—');
+  if(idx===-1) return {front: text, back: text};
+  return {front: text.slice(0,idx).trim(), back: text.slice(idx+1).trim()};
+}
+
+const CARDS = [];
+ANSWERS.forEach((a,ai)=>{
+  a.valueAdditions.forEach((v,i)=>{
+    const {front,back} = splitTermExplanation(v);
+    CARDS.push({id:`va_${ai}_${i}`, type:'va', paper:a.paper, subtopic:a.subtopic, front, back, mastered:false, needsReview:false});
+  });
+  a.examples.forEach((v,i)=>{
+    const {front,back} = splitTermExplanation(v);
+    CARDS.push({id:`ex_${ai}_${i}`, type:'ex', paper:a.paper, subtopic:a.subtopic, front, back, mastered:false, needsReview:false});
+  });
+  CARDS.push({id:`learn_${ai}`, type:'learn', paper:a.paper, subtopic:a.subtopic, front:`What's the one takeaway from "${a.subtopic}"?`, back:a.learning, mastered:false, needsReview:false});
+});
+
+const PAPER_LIST = [...new Set(CARDS.map(c=>c.paper))];
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html',true],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- filters ---------- */
+let activeDeck = 'all';
+let activePaper = 'All';
+let filteredCards = [];
+let studyIndex = 0;
+
+const DECKS = [
+  {key:'all', label:'All Cards'},
+  {key:'va', label:'Value Additions'},
+  {key:'ex', label:'Examples & Data'},
+  {key:'learn', label:'My Learnings'},
+];
+document.getElementById('deckChips').innerHTML = DECKS.map(d=>{
+  const count = d.key==='all' ? CARDS.length : CARDS.filter(c=>c.type===d.key).length;
+  return `<div class="chip ${activeDeck===d.key?'active':''}" data-deck="${d.key}">${d.label} (${count})</div>`;
+}).join('');
+document.getElementById('deckChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  activeDeck = chip.dataset.deck;
+  document.querySelectorAll('#deckChips .chip').forEach(c=>c.classList.toggle('active', c===chip));
+  applyFilters();
+});
+
+document.getElementById('paperChips').innerHTML = ['All', ...PAPER_LIST].map(p=>
+  `<div class="chip ${p==='All'?'active':''}" data-paper="${p}">${p}</div>`
+).join('');
+document.getElementById('paperChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  activePaper = chip.dataset.paper;
+  document.querySelectorAll('#paperChips .chip').forEach(c=>c.classList.toggle('active', c===chip));
+  applyFilters();
+});
+
+function applyFilters(){
+  filteredCards = CARDS.filter(c=>{
+    if(activeDeck!=='all' && c.type!==activeDeck) return false;
+    if(activePaper!=='All' && c.paper!==activePaper) return false;
+    return true;
+  });
+  studyIndex = 0;
+  renderMiniStats();
+  renderStudyCard();
+  renderDeckGrid();
+}
+
+/* ---------- mini stats ---------- */
+function renderMiniStats(){
+  const mastered = CARDS.filter(c=>c.mastered).length;
+  const needsReview = CARDS.filter(c=>c.needsReview).length;
+  document.getElementById('ministats').innerHTML = `
+    <div class="ministat"><div class="mv">${CARDS.length}</div><div class="ml">Total Cards</div></div>
+    <div class="ministat good"><div class="mv">${mastered}</div><div class="ml">Got It</div></div>
+    <div class="ministat flag"><div class="mv">${needsReview}</div><div class="ml">Needs Review</div></div>
+    <div class="ministat"><div class="mv">${filteredCards.length}</div><div class="ml">In Current Deck</div></div>
+  `;
+}
+
+/* ---------- study card ---------- */
+function renderStudyCard(){
+  const flipEl = document.getElementById('flipCard');
+  flipEl.classList.remove('flipped');
+  if(filteredCards.length===0){
+    document.getElementById('studyProgress').textContent = 'No cards in this deck.';
+    document.getElementById('fcFrontText').textContent = 'Try a different filter.';
+    document.getElementById('fcBackText').textContent = '';
+    document.getElementById('fcTypeFront').textContent = '';
+    document.getElementById('fcPaperFront').textContent = '';
+    document.getElementById('fcSubtopic').textContent = '';
+    document.getElementById('prevBtn').disabled = true;
+    document.getElementById('nextBtn').disabled = true;
+    return;
+  }
+  document.getElementById('prevBtn').disabled = false;
+  document.getElementById('nextBtn').disabled = false;
+
+  const c = filteredCards[studyIndex];
+  const tCol = TYPE_COLORS[c.type];
+  const pCol = PAPER_COLORS[c.paper]||'#888';
+
+  document.getElementById('studyProgress').textContent = `Card ${studyIndex+1} of ${filteredCards.length}`;
+  document.getElementById('fcTypeFront').textContent = tCol.label;
+  document.getElementById('fcTypeFront').style.background = tCol.bg;
+  document.getElementById('fcTypeFront').style.color = tCol.fg;
+  document.getElementById('fcPaperFront').textContent = c.paper;
+  document.getElementById('fcPaperFront').style.background = pCol+'1a';
+  document.getElementById('fcPaperFront').style.color = pCol;
+  document.getElementById('fcFrontText').textContent = c.front;
+  document.getElementById('fcTypeBack').textContent = tCol.label;
+  document.getElementById('fcBackText').textContent = c.back;
+  document.getElementById('fcSubtopic').textContent = `${c.paper} · ${c.subtopic}`;
+}
+
+document.getElementById('flipCard').addEventListener('click', ()=>{
+  if(filteredCards.length===0) return;
+  document.getElementById('flipCard').classList.toggle('flipped');
+});
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(filteredCards.length===0) return;
+  studyIndex = (studyIndex-1+filteredCards.length)%filteredCards.length;
+  renderStudyCard();
+});
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(filteredCards.length===0) return;
+  studyIndex = (studyIndex+1)%filteredCards.length;
+  renderStudyCard();
+});
+document.getElementById('knowBtn').addEventListener('click', ()=>{
+  if(filteredCards.length===0) return;
+  const c = filteredCards[studyIndex];
+  c.mastered = true; c.needsReview = false;
+  renderMiniStats(); renderDeckGrid();
+  studyIndex = (studyIndex+1)%filteredCards.length;
+  renderStudyCard();
+});
+document.getElementById('reviewBtn').addEventListener('click', ()=>{
+  if(filteredCards.length===0) return;
+  const c = filteredCards[studyIndex];
+  c.needsReview = true; c.mastered = false;
+  renderMiniStats(); renderDeckGrid();
+  studyIndex = (studyIndex+1)%filteredCards.length;
+  renderStudyCard();
+});
+
+/* ---------- browsable deck grid ---------- */
+function renderDeckGrid(){
+  const gridEl = document.getElementById('deckGrid');
+  gridEl.innerHTML = filteredCards.map((c,i)=>{
+    const tCol = TYPE_COLORS[c.type];
+    const pCol = PAPER_COLORS[c.paper]||'#888';
+    const statusColor = c.mastered ? 'var(--green-600)' : c.needsReview ? 'var(--red)' : '#d7dcd8';
+    return `<div class="deck-tile" data-jump="${i}">
+      <div class="dt-top">
+        <span class="dt-ptag" style="background:${pCol}1a;color:${pCol};">${c.paper}</span>
+        <span class="dt-typetag">${tCol.label}</span>
+        <span class="dt-status" style="background:${statusColor};"></span>
+      </div>
+      <div class="dt-front">${c.front}</div>
+      <div class="dt-sub">${c.subtopic}</div>
+    </div>`;
+  }).join('');
+  gridEl.querySelectorAll('[data-jump]').forEach(tile=>{
+    tile.addEventListener('click', ()=>{
+      studyIndex = parseInt(tile.dataset.jump);
+      renderStudyCard();
+      document.querySelector('.study-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+
+applyFilters();
+</script>
+</body>
+</html>

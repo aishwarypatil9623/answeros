@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Analytics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:130px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .ministat.flag .mv{color:var(--red);}
+
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px 16px 20px;box-shadow:var(--shadow);}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .card-head h3{font-size:14px;margin:0;letter-spacing:-0.01em;}
+  .card-sub{font-size:11.5px;color:var(--ink-500);margin-bottom:14px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+
+  .insight-box{background:var(--green-50);border-left:3px solid var(--green-600);border-radius:0 8px 8px 0;padding:10px 14px;font-size:12px;line-height:1.55;color:var(--ink-900);margin-top:14px;}
+  .insight-box.flag{background:var(--red-50);border-left-color:var(--red);color:#7a3226;}
+  .insight-box b{color:inherit;}
+
+  .legend-list{display:flex;flex-direction:column;gap:9px;margin-top:2px;}
+  .legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .legend-row .lbl{flex:1;color:var(--ink-700);}
+  .legend-row .val{font-weight:700;color:var(--ink-900);}
+  .legend-row .pct{color:var(--ink-500);font-size:11px;margin-left:3px;}
+
+  .gap-strip{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  .gap-row{display:flex;align-items:center;gap:10px;}
+  .gap-row .gday{width:56px;font-size:11px;color:var(--ink-500);flex-shrink:0;}
+  .gap-track{flex:1;height:8px;background:#eef1ee;border-radius:5px;overflow:hidden;}
+  .gap-track > div{height:100%;border-radius:5px;}
+  .gap-row .gval{width:44px;text-align:right;font-size:11px;font-weight:700;color:var(--ink-900);flex-shrink:0;}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        Numbers don't lie — they just tell you what to fix next.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <h1>Analytics</h1>
+      <p>The patterns underneath your 12 logged answers — where marks are actually being lost.</p>
+    </div>
+    <div class="note-banner">📊 Built from the same 12 real answers as your Dashboard and All Answers page. No sample data here — every number below is computed directly, including the uncomfortable ones.</div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h3>Score Distribution</h3></div>
+        <div class="card-sub">How your 12 scores spread across the 0–10 band.</div>
+        <canvas id="distChart" height="160"></canvas>
+        <div class="insight-box flag" id="distInsight"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Paper-wise Performance</h3></div>
+        <div class="card-sub">Average score by GS paper, with sample size — small samples are noted, not hidden.</div>
+        <canvas id="paperChart" height="160"></canvas>
+        <div class="insight-box" id="paperInsight"></div>
+      </section>
+    </div>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h3>Directive-wise Performance</h3></div>
+        <div class="card-sub">Score by command word — "Examine," "Critically examine," "Discuss." This is where technique gaps show up.</div>
+        <canvas id="directiveChart" height="160"></canvas>
+        <div class="insight-box" id="directiveInsight"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Recurring Feedback Gap</h3></div>
+        <div class="card-sub">The specific weakness flagged most often across all 12 answers, regardless of paper.</div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+            <canvas id="gapDonut"></canvas>
+          </div>
+          <div class="legend-list" id="gapLegend"></div>
+        </div>
+        <div class="insight-box flag" id="gapInsight"></div>
+      </section>
+    </div>
+
+    <div class="grid2">
+      <section class="card">
+        <div class="card-head"><h3>Demand Addressed vs Score</h3></div>
+        <div class="card-sub">Does covering more of what the question actually asks translate into marks?</div>
+        <canvas id="corrChart" height="180"></canvas>
+        <div class="insight-box" id="corrInsight"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h3>Writing Consistency</h3></div>
+        <div class="card-sub">Gaps between consecutive answers — the pattern behind your streaks.</div>
+        <div class="gap-strip" id="gapStrip"></div>
+        <div class="insight-box" id="consistencyInsight"></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Same real dataset as Dashboard / All Answers, extended with
+   directive + gapCategory (already tracked per answer) so this
+   page can do real cross-cuts without re-fetching anything.
+============================================================ */
+const ANSWERS = [
+  {date:'2026-08-15', paper:'GS1', marks:4.5, max:15, demand:45, directive:'Discuss', gapCategory:'Factual Accuracy'},
+  {date:'2026-08-14', paper:'GS2', marks:4.5, max:15, demand:45, directive:'Examine', gapCategory:'Examples & Data'},
+  {date:'2026-08-13', paper:'GS2', marks:6.5, max:15, demand:45, directive:'Critically examine', gapCategory:'Legal/Institutional Backing'},
+  {date:'2026-08-12', paper:'GS3', marks:7,   max:15, demand:60, directive:'Examine', gapCategory:'Examples & Data'},
+  {date:'2026-08-11', paper:'GS2', marks:5,   max:15, demand:55, directive:'Critically examine', gapCategory:'Legal/Institutional Backing'},
+  {date:'2026-08-10', paper:'GS3', marks:6.5, max:15, demand:60, directive:'Examine', gapCategory:'Depth & Specificity'},
+  {date:'2026-08-08', paper:'GS3', marks:6.5, max:15, demand:55, directive:'Examine', gapCategory:'Examples & Data'},
+  {date:'2026-08-05', paper:'GS1', marks:5.5, max:15, demand:45, directive:'Discuss and Examine', gapCategory:'Factual Accuracy'},
+  {date:'2026-08-01', paper:'GS2', marks:4.5, max:15, demand:50, directive:'Examine', gapCategory:'Examples & Data'},
+  {date:'2026-07-20', paper:'GS3', marks:5,   max:15, demand:45, directive:'Examine', gapCategory:'Depth & Specificity'},
+  {date:'2026-07-15', paper:'GS2', marks:4.5, max:15, demand:50, directive:'Examine', gapCategory:'Examples & Data'},
+  {date:'2026-07-11', paper:'GS2', marks:3,   max:10, demand:40, directive:'Examine', gapCategory:'Legal/Institutional Backing'},
+];
+ANSWERS.forEach(a=> a.score = a.marks/a.max*10);
+
+const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', Essay:'#c98a1f', PSIR:'#22a3a3'};
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html',true],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html'],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- mini stats ---------- */
+const totalAnswers = ANSWERS.length;
+const scores = ANSWERS.map(a=>a.score);
+const mean = scores.reduce((a,b)=>a+b,0)/totalAnswers;
+const variance = scores.reduce((s,x)=>s+(x-mean)**2,0)/totalAnswers;
+const stdev = Math.sqrt(variance);
+const dates = ANSWERS.map(a=>new Date(a.date)).sort((a,b)=>a-b);
+const gaps = [];
+for(let i=1;i<dates.length;i++){ gaps.push(Math.round((dates[i]-dates[i-1])/(1000*60*60*24))); }
+const longestGap = Math.max(...gaps);
+const spanDays = Math.round((dates[dates.length-1]-dates[0])/(1000*60*60*24));
+const paceWk = (totalAnswers/(spanDays/7)).toFixed(1);
+
+document.getElementById('ministats').innerHTML = `
+  <div class="ministat"><div class="mv">${mean.toFixed(1)}/10</div><div class="ml">Mean Score</div></div>
+  <div class="ministat flag"><div class="mv">±${stdev.toFixed(2)}</div><div class="ml">Score Std. Deviation</div></div>
+  <div class="ministat"><div class="mv">${paceWk}/wk</div><div class="ml">Writing Pace</div></div>
+  <div class="ministat flag"><div class="mv">${longestGap}d</div><div class="ml">Longest Gap</div></div>
+`;
+
+/* ---------- score distribution ---------- */
+const bands = [
+  {label:'0–2', min:0, max:2}, {label:'2–4', min:2, max:4}, {label:'4–6', min:4, max:6},
+  {label:'6–8', min:6, max:8}, {label:'8–10', min:8, max:10.01},
+];
+const bandCounts = bands.map(b=> scores.filter(s=>s>=b.min && s<b.max).length);
+new Chart(document.getElementById('distChart'), {
+  type:'bar',
+  data:{ labels: bands.map(b=>b.label), datasets:[{ data: bandCounts, backgroundColor: bands.map((b,i)=> i<2 ? '#b3402c' : i<3 ? '#c98a1f' : '#2c8a46'), borderRadius:6, maxBarThickness:48 }] },
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#eef1ee'}}, x:{grid:{display:false}} } }
+});
+const below4 = bandCounts[0]+bandCounts[1];
+const below4Pct = Math.round(below4/totalAnswers*100);
+document.getElementById('distInsight').innerHTML = `<b>${below4Pct}% of your answers (${below4}/${totalAnswers}) score below 4/10.</b> None have crossed 6/10 yet. That's the honest baseline — everything else on this page is about closing that gap.`;
+
+/* ---------- paper-wise performance ---------- */
+const papers = [...new Set(ANSWERS.map(a=>a.paper))];
+const paperAvg = papers.map(p=>{
+  const rows = ANSWERS.filter(a=>a.paper===p);
+  return { paper:p, avg: rows.reduce((s,a)=>s+a.score,0)/rows.length, n: rows.length };
+});
+new Chart(document.getElementById('paperChart'), {
+  type:'bar',
+  data:{ labels: paperAvg.map(p=>`${p.paper} (n=${p.n})`), datasets:[{ data: paperAvg.map(p=>+p.avg.toFixed(2)), backgroundColor: paperAvg.map(p=>PAPER_COLORS[p.paper]), borderRadius:6, maxBarThickness:48 }] },
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{min:0,max:10, grid:{color:'#eef1ee'}}, x:{grid:{display:false}} } }
+});
+const weakestP = paperAvg.slice().sort((a,b)=>a.avg-b.avg)[0];
+const strongestP = paperAvg.slice().sort((a,b)=>b.avg-a.avg)[0];
+document.getElementById('paperInsight').innerHTML = `<b>${weakestP.paper}</b> is your weakest paper at ${weakestP.avg.toFixed(1)}/10 (n=${weakestP.n}). <b>${strongestP.paper}</b> leads at ${strongestP.avg.toFixed(1)}/10 (n=${strongestP.n}). With samples this small, treat this as a direction to watch, not a verdict — revisit after 5+ answers per paper.`;
+
+/* ---------- directive-wise performance ---------- */
+const directives = [...new Set(ANSWERS.map(a=>a.directive))];
+const dirAvg = directives.map(d=>{
+  const rows = ANSWERS.filter(a=>a.directive===d);
+  return { directive:d, avg: rows.reduce((s,a)=>s+a.score,0)/rows.length, n: rows.length };
+}).sort((a,b)=>b.n-a.n);
+new Chart(document.getElementById('directiveChart'), {
+  type:'bar',
+  data:{ labels: dirAvg.map(d=>`${d.directive} (n=${d.n})`), datasets:[{ data: dirAvg.map(d=>+d.avg.toFixed(2)), backgroundColor:'#7a4fd5', borderRadius:6, maxBarThickness:40 }] },
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{ x:{min:0,max:10, grid:{color:'#eef1ee'}}, y:{grid:{display:false}} } }
+});
+const mainDir = dirAvg.filter(d=>d.n>=2).sort((a,b)=>a.avg-b.avg)[0];
+document.getElementById('directiveInsight').innerHTML = mainDir
+  ? `Among directives you've practiced more than once, <b>"${mainDir.directive}"</b> sits lowest at ${mainDir.avg.toFixed(1)}/10 (n=${mainDir.n}). Single-attempt directives aren't shown here as a verdict — one answer isn't a trend.`
+  : `Not enough repeats per directive yet to call a pattern — most have only 1 attempt so far.`;
+
+/* ---------- gap category ---------- */
+const gapCounts = {};
+ANSWERS.forEach(a=>{ gapCounts[a.gapCategory] = (gapCounts[a.gapCategory]||0)+1; });
+const gapLabels = Object.keys(gapCounts);
+const gapColors = ['#b3402c','#c98a1f','#3b6fd5','#2c8a46','#7a4fd5'];
+new Chart(document.getElementById('gapDonut'), {
+  type:'doughnut',
+  data:{ labels:gapLabels, datasets:[{ data:gapLabels.map(g=>gapCounts[g]), backgroundColor:gapLabels.map((g,i)=>gapColors[i%gapColors.length]), borderWidth:3, borderColor:'#fff' }] },
+  options:{ cutout:'70%', plugins:{legend:{display:false}} }
+});
+document.getElementById('gapLegend').innerHTML = gapLabels.map((g,i)=>{
+  const pct = Math.round(gapCounts[g]/totalAnswers*100);
+  return `<div class="legend-row"><div class="dot" style="background:${gapColors[i%gapColors.length]}"></div><div class="lbl">${g}</div><div class="val">${gapCounts[g]}</div><div class="pct">(${pct}%)</div></div>`;
+}).join('');
+const topGap = Object.entries(gapCounts).sort((a,b)=>b[1]-a[1])[0];
+const topGapPct = Math.round(topGap[1]/totalAnswers*100);
+document.getElementById('gapInsight').innerHTML = `<b>${topGap[0]}</b> is flagged in ${topGap[1]} of ${totalAnswers} answers (${topGapPct}%) — spread across multiple papers, not one. This is a technique habit, not a knowledge gap in any single subject.`;
+
+/* ---------- demand vs score correlation ---------- */
+function pearsonR(xs, ys){
+  const n = xs.length;
+  const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  const cov = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0)/n;
+  const sx = Math.sqrt(xs.reduce((s,x)=>s+(x-mx)**2,0)/n);
+  const sy = Math.sqrt(ys.reduce((s,y)=>s+(y-my)**2,0)/n);
+  return cov/(sx*sy);
+}
+const demandVals = ANSWERS.map(a=>a.demand);
+const r = pearsonR(demandVals, scores);
+new Chart(document.getElementById('corrChart'), {
+  type:'scatter',
+  data:{ datasets:[{ data: ANSWERS.map(a=>({x:a.demand, y:+a.score.toFixed(2)})), backgroundColor:'#2c8a46', pointRadius:6, pointHoverRadius:8 }] },
+  options:{ plugins:{legend:{display:false}}, scales:{
+    x:{title:{display:true,text:'% Demand Addressed'}, min:30, max:70, grid:{color:'#eef1ee'}},
+    y:{title:{display:true,text:'Score /10'}, min:0, max:10, grid:{color:'#eef1ee'}}
+  }}
+});
+const rStrength = Math.abs(r)>=0.6?'moderately strong':Math.abs(r)>=0.3?'moderate':'weak';
+document.getElementById('corrInsight').innerHTML = `Correlation r = <b>${r.toFixed(2)}</b> — a ${rStrength} positive relationship. Addressing more of what the question actually demands is tracking with higher scores, which is expected — but it also means demand-coverage is a lever you can pull directly, not a vague "write better" ask.`;
+
+/* ---------- writing consistency ---------- */
+const gapMax = Math.max(...gaps, 1);
+document.getElementById('gapStrip').innerHTML = gaps.map((g,i)=>{
+  const pct = Math.round(g/gapMax*100);
+  const color = g>=7 ? '#b3402c' : g>=4 ? '#c98a1f' : '#2c8a46';
+  return `<div class="gap-row"><div class="gday">Gap ${i+1}</div><div class="gap-track"><div style="width:${pct}%;background:${color};"></div></div><div class="gval">${g}d</div></div>`;
+}).join('');
+const bigGaps = gaps.filter(g=>g>=7).length;
+document.getElementById('consistencyInsight').innerHTML = `Longest stretch without an answer: <b>${longestGap} days</b> (mid-to-late July). Outside that one dip, you're writing every 1–5 days — the pattern breaks around long gaps, not short ones. ${bigGaps>1?'Watch for repeat week-plus gaps — they compound.':'One outlier so far — worth watching if it repeats.'}`;
+</script>
+</body>
+</html>

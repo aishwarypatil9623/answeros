@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AnswerOS — Revision Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-900:#14532d; --green-800:#1c5c30; --green-700:#1f7a3d; --green-600:#2c8a46;
+    --green-100:#e6f4ea; --green-50:#f3faf5;
+    --ink-900:#14171a; --ink-700:#3c4247; --ink-500:#6b7278; --ink-300:#a2a8ad;
+    --line:#e7eae8; --bg:#f6f8f6; --card:#ffffff;
+    --red:#b3402c; --red-50:#fbf1ee; --amber:#c98a1f; --amber-50:#fbf5e8;
+    --blue:#3b6fd5; --purple:#7a4fd5;
+    --shadow: 0 1px 2px rgba(20,23,26,0.04), 0 6px 20px rgba(20,23,26,0.05);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink-900);font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:"Source Serif 4",Georgia,serif;}
+  .app{display:grid;grid-template-columns:232px 1fr;min-height:100vh;min-width:1180px;}
+
+  .sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;}
+  .brand{display:flex;align-items:center;gap:10px;padding:2px 8px 22px 8px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--green-600),var(--green-900));display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;box-shadow:var(--shadow);}
+  .brand-text .name{font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--ink-900);line-height:1.1;}
+  .brand-text .sub{font-size:11px;color:var(--ink-500);margin-top:2px;}
+  nav{display:flex;flex-direction:column;gap:2px;margin-top:6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--ink-700);font-size:13.5px;font-weight:500;cursor:pointer;user-select:none;transition:background .12s ease,color .12s ease;}
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75;}
+  .nav-item:hover{background:var(--green-50);color:var(--green-800);}
+  .nav-item.active{background:var(--green-100);color:var(--green-800);font-weight:600;}
+  .nav-item.active svg{opacity:1;}
+  .nav-spacer{flex:1;}
+  .side-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:10px;}
+  .user-row{display:flex;align-items:center;gap:10px;padding:6px 8px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#f0b7c4,#e08fa6);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+  .user-row .uname{font-weight:600;font-size:12.5px;}
+  .user-row .urole{font-size:11px;color:var(--ink-500);}
+  .quote-card{margin-top:12px;background:var(--green-900);color:#e9f5ec;border-radius:12px;padding:14px;font-size:12px;line-height:1.55;}
+  .quote-card .mark{font-size:20px;opacity:.5;line-height:0;display:block;margin-bottom:2px;}
+  .quote-card .attrib{margin-top:8px;font-size:10.5px;color:#a9d3b4;}
+
+  main{padding:22px 30px 60px 30px;max-width:1760px;}
+  .pagehead h1{font-size:22px;margin:0 0 4px 0;letter-spacing:-0.02em;}
+  .pagehead p{margin:0;color:var(--ink-500);font-size:12.5px;}
+  .note-banner{background:var(--amber-50);border:1px solid #e7dcc0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#5c470f;line-height:1.5;margin:14px 0 20px 0;}
+
+  .ministat-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+  .ministat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 16px;box-shadow:var(--shadow);min-width:130px;}
+  .ministat .mv{font-size:18px;font-weight:800;letter-spacing:-0.02em;}
+  .ministat .ml{font-size:10.5px;color:var(--ink-500);margin-top:1px;}
+  .ministat.flag .mv{color:var(--red);}
+
+  .due-strip{background:linear-gradient(120deg,var(--green-900),var(--green-800));border-radius:var(--radius);padding:16px 20px;margin-bottom:22px;color:#eaf6ee;}
+  .due-strip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .due-strip-head h3{margin:0;font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;}
+  .due-list{display:flex;gap:10px;flex-wrap:wrap;}
+  .due-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:8px 12px;font-size:11.5px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .due-chip:hover{background:rgba(255,255,255,.18);}
+  .due-chip .dpaper{font-weight:700;background:rgba(255,255,255,.15);padding:2px 6px;border-radius:5px;}
+  .due-empty{font-size:12px;color:#bfe6cb;}
+
+  .vault-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:22px;}
+  .vault-card h3{margin:0 0 4px 0;font-size:14px;}
+  .vault-sub{font-size:11.5px;color:var(--ink-500);margin-bottom:14px;}
+  .vault-chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .vault-chip{background:var(--green-50);color:var(--green-800);border:1px solid transparent;font-size:11.5px;font-weight:600;padding:6px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .vault-chip:hover{border-color:var(--green-600);}
+  .vault-chip.active{background:var(--green-800);color:#fff;}
+  .vault-chip .vcount{opacity:.7;font-weight:500;}
+
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5;}
+  .search-wrap{position:relative;flex:1;min-width:220px;max-width:340px;}
+  .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-300);}
+  .search-wrap input{width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-family:inherit;outline:none;}
+  .search-wrap input:focus{border-color:var(--green-600);box-shadow:0 0 0 3px var(--green-100);}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{padding:7px 13px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12px;font-weight:600;color:var(--ink-700);cursor:pointer;user-select:none;}
+  .chip:hover{border-color:var(--green-600);}
+  .chip.active{background:var(--green-800);border-color:var(--green-800);color:#fff;}
+  .toolbar-spacer{flex:1;}
+  select.sortsel{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-family:inherit;color:var(--ink-700);cursor:pointer;outline:none;}
+  .clear-filter{font-size:11px;color:var(--red);font-weight:600;cursor:pointer;}
+
+  #list{display:flex;flex-direction:column;gap:12px;}
+  .rcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px;}
+  .rcard-top{display:flex;align-items:flex-start;gap:12px;}
+  .ptag{font-size:11px;font-weight:800;border-radius:7px;padding:5px 10px;flex-shrink:0;}
+  .scorebadge{flex-shrink:0;width:52px;text-align:center;padding:5px 0;border-radius:9px;font-weight:800;font-size:13px;}
+  .r-main{flex:1;min-width:0;}
+  .r-title{font-size:13.5px;font-weight:700;color:var(--ink-900);}
+  .r-meta{font-size:11px;color:var(--ink-500);margin-top:3px;}
+  .gap-badge{background:var(--red-50);color:var(--red);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;margin-left:6px;}
+
+  .learning-callout{background:var(--green-50);border-left:3px solid var(--green-600);border-radius:0 8px 8px 0;padding:11px 14px;font-size:13px;line-height:1.55;color:var(--ink-900);margin-top:12px;}
+  .learning-callout b{color:var(--green-800);}
+  .topper-line{margin-top:10px;font-size:12px;line-height:1.5;color:#5c470f;background:var(--amber-50);border:1px solid #e7dcc0;border-radius:8px;padding:9px 12px;}
+  .kw-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .kw-chip{background:#eef3ee;color:var(--green-800);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+  .kw-chip.hit{background:var(--green-700);color:#fff;}
+
+  .rcard-controls{display:flex;align-items:center;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap;}
+  .attempt-toggle{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;cursor:pointer;user-select:none;color:var(--ink-700);}
+  .attempt-toggle input{width:15px;height:15px;accent-color:var(--green-700);cursor:pointer;}
+  .stars{display:flex;gap:2px;}
+  .star{width:15px;height:15px;cursor:pointer;color:var(--ink-300);}
+  .star.filled{color:var(--amber);}
+  .revision-info{margin-left:auto;font-size:11.5px;color:var(--ink-500);display:flex;align-items:center;gap:8px;}
+  .revision-info.overdue{color:var(--red);font-weight:600;}
+  .revision-info.due-today{color:#8a6212;font-weight:600;}
+  .revise-btn{background:var(--green-800);color:#fff;border:none;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .revise-btn:hover{background:var(--green-900);}
+
+  .empty-state{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:50px 20px;text-align:center;color:var(--ink-500);font-size:13px;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:#d7dcd8;border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">🌱</div>
+      <div class="brand-text"><div class="name">AnswerOS</div><div class="sub">Answer Writing Tracker</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-spacer"></div>
+    <div class="side-foot">
+      <div class="user-row">
+        <div class="avatar">AP</div>
+        <div><div class="uname">Aishwary Patil</div><div class="urole">UPSC Aspirant 🎯</div></div>
+      </div>
+      <div class="quote-card">
+        <span class="mark">"</span>
+        You don't remember what you wrote once. You remember what you revised on a schedule.
+        <div class="attrib">— Examiner's Note</div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="pagehead">
+      <h1>Revision Hub</h1>
+      <p>Every "My One Learning" and Topper Edge from your 12 answers, on a spaced-revision schedule.</p>
+    </div>
+    <div class="note-banner">🔁 Built entirely from your real answers — the same 12 rows as everywhere else. Review state (internalized / confidence / next due) lives in this session only, same limitation as the PYQ Tracker, for the same reason: no revision columns in your sheet yet.</div>
+
+    <div class="ministat-row" id="ministats"></div>
+
+    <div class="due-strip">
+      <div class="due-strip-head">
+        <h3>🔔 Due for Revision</h3>
+        <span style="font-size:11px;color:#bfe6cb;" id="dueCount"></span>
+      </div>
+      <div class="due-list" id="dueList"></div>
+    </div>
+
+    <div class="vault-card">
+      <h3>Keyword Vault</h3>
+      <div class="vault-sub">Every "Essential Keyword" flagged across your answers, aggregated. Click one to see which answers used it.</div>
+      <div class="vault-chips" id="vaultChips"></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchBox" placeholder="Search subtopic or learning…" />
+      </div>
+      <div class="chips" id="paperChips"></div>
+      <div class="toolbar-spacer"></div>
+      <span id="kwFilterTag"></span>
+      <select class="sortsel" id="sortSel">
+        <option value="priority">Priority (weakest first)</option>
+        <option value="date-desc">Newest first</option>
+        <option value="due-first">Due for revision first</option>
+      </select>
+    </div>
+
+    <div id="list"></div>
+    <div id="emptyState" class="empty-state" style="display:none;">No answers match this filter.</div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   Same real 12-answer dataset used across the app, extended
+   with the revision-relevant fields: My One Learning, Topper
+   Edge, and Essential Keywords (all pulled from the actual
+   sheet-derived answer records on the All Answers page).
+============================================================ */
+const ANSWERS = [
+  {date:'2026-08-15', paper:'GS1', subject:'Modern Indian History', subtopic:'Indian Freedom Struggle — Cultural Awakening', marks:4.5, max:15, gapCategory:'Factual Accuracy',
+   learning:'Ground every cultural argument in specific freedom-struggle personalities and movements.',
+   topperEdge:'Explicitly link how cultural symbols transformed elite political movements into a broad-based mass upsurge.',
+   keywords:['Cultural Nationalism','Indigenous Aesthetic Revival','Subaltern Mobilisation','Anti-Colonial Resistance','Ideological Hegemony']},
+  {date:'2026-08-14', paper:'GS2', subject:'International Relations', subtopic:"India's Neighbourhood Policy", marks:4.5, max:15, gapCategory:'Examples & Data',
+   learning:'Substantiate every diplomatic argument with a concrete bilateral project.',
+   topperEdge:'Integrate specific bilateral projects, transmission capacities, and multilateral frameworks for each country instead of generic analytical points.',
+   keywords:['Energy interdependence','Grid interconnection','Strategic autonomy','Sub-regional cooperation']},
+  {date:'2026-08-13', paper:'GS2', subject:'Polity and Governance', subtopic:'Civil Society and NGOs Regulation', marks:6.5, max:15, gapCategory:'Legal/Institutional Backing',
+   learning:'Ground general arguments in specific institutional mechanisms and legal provisions.',
+   topperEdge:'Propose a risk-based compliance framework that subjects high-risk foreign funding to strict scrutiny while streamlining routine welfare NGOs.',
+   keywords:['Foreign contribution regulation','Civil society autonomy','National security oversight','Compliance burden']},
+  {date:'2026-08-12', paper:'GS3', subject:'Economy', subtopic:'MSME Sector and Industrial Clusters', marks:7, max:15, gapCategory:'Examples & Data',
+   learning:'Ground general economic arguments in verified cluster-specific case studies.',
+   topperEdge:'Incorporate specific institutional mechanisms like Common Facility Centres to explain how clustering practically reduces operational overheads.',
+   keywords:['Economies of agglomeration','Global Value Chains (GVCs)','Productivity trap']},
+  {date:'2026-08-11', paper:'GS2', subject:'Social Justice', subtopic:'Vulnerable Sections and Affirmative Action', marks:5, max:15, gapCategory:'Legal/Institutional Backing',
+   learning:'Integrate specific constitutional articles and commission reports to strengthen socio-legal debates.',
+   topperEdge:'Explicitly examine the interplay between Article 25 (religious freedom) and Article 14/15 (equality) alongside the 1950 Presidential Order.',
+   keywords:['Substantive Equality','Constitutional Morality','Resource Dilution','Elite Capture']},
+  {date:'2026-08-10', paper:'GS3', subject:'Economy', subtopic:'Infrastructure: Ports and Digital Governance', marks:6.5, max:15, gapCategory:'Depth & Specificity',
+   learning:'Link administrative portals directly to specific governance reforms.',
+   topperEdge:'Integrate specific governance mechanisms like single-window clearance and interoperability with global shipping standards to elevate the analytical depth.',
+   keywords:['Maritime governance','Single-window clearance','Interoperability','Digital maritime ecosystem']},
+  {date:'2026-08-08', paper:'GS3', subject:'Economy', subtopic:'Digital Payments and Financial Inclusion', marks:6.5, max:15, gapCategory:'Examples & Data',
+   learning:'Substantiate payment ecosystem debates with concrete cost-revenue metrics.',
+   topperEdge:'Integrate specific economic trade-offs between bank infrastructure costs and consumer financial inclusion benefits using structured stakeholder analysis.',
+   keywords:['Digital Public Infrastructure','Zero-MDR model','Financial sustainability','Merchant Discount Rate','Payment ecosystem']},
+  {date:'2026-08-05', paper:'GS1', subject:'Geography', subtopic:'Climatology and Upper Air Phenomena', marks:5.5, max:15, gapCategory:'Factual Accuracy',
+   learning:'Integrate rigorous scientific definitions for technical geography concepts.',
+   topperEdge:'Incorporate precise meteorological terminology such as vertical wind shear and tropopause folding while linking phenomena directly to aviation risk profiles.',
+   keywords:['Jet Streams','Clear Air Turbulence','Madden-Julian Oscillation','Wind Shear','Tropopause Dynamics']},
+  {date:'2026-08-01', paper:'GS2', subject:'Governance', subtopic:'Social Media, Digital Power and Democratic Governance', marks:4.5, max:15, gapCategory:'Examples & Data',
+   learning:'Ground every digital governance argument in concrete regulatory acts and real platform challenges.',
+   topperEdge:'Integrate structured governance dimensions such as data sovereignty, algorithmic transparency, and co-regulation models instead of generic safety points.',
+   keywords:['Private digital power','Algorithmic bias','Data sovereignty','Content moderation','Platform accountability']},
+  {date:'2026-07-20', paper:'GS3', subject:'Science and Technology', subtopic:'Space Technology — Vikram-1', marks:5, max:15, gapCategory:'Depth & Specificity',
+   learning:'Integrate specific regulatory frameworks and funding data into technology answers.',
+   topperEdge:'Articulate how private launch vehicles democratize access while allowing ISRO to focus exclusively on deep-space exploration and heavy missions.',
+   keywords:['Commercial space sector','Technology transfer','Public-Private Partnership','Launch vehicle capability','Space economy share']},
+  {date:'2026-07-15', paper:'GS2', subject:'International Relations / Geopolitics', subtopic:'Maritime Security and Global Chokepoints', marks:4.5, max:15, gapCategory:'Examples & Data',
+   learning:'Ground strategic arguments in international law and hard data.',
+   topperEdge:"Explicitly link unilateral chokepoint tolls to violations of UNCLOS transit passage rights while detailing India's specific energy vulnerabilities.",
+   keywords:['Chokepoint diplomacy','Geographic leverage','Energy security','Maritime security architecture']},
+  {date:'2026-07-11', paper:'GS2', subject:'Polity and Governance', subtopic:'Judiciary and Accountability', marks:3, max:10, gapCategory:'Legal/Institutional Backing',
+   learning:'Integrate specific constitutional articles and removal procedures into judicial governance answers.',
+   topperEdge:'Explicitly link the theoretical balance of powers with concrete procedural loopholes exposed by mid-inquiry resignations.',
+   keywords:['Constitutional morality','Impeachment procedure','Checks and balances','Proved misbehaviour']},
+];
+ANSWERS.forEach((a,i)=>{ a.id='ans_'+i; a.score=a.marks/a.max*10; a.reviewed=false; a.confidence=0; a.nextDue=null; a.lastRevised=null; });
+
+const PAPER_COLORS = {GS1:'#3b6fd5', GS2:'#2c8a46', GS3:'#7a4fd5', GS4:'#e0762c', PSIR:'#22a3a3', Essay:'#c98a1f'};
+
+/* ---------- nav ---------- */
+function navIcon(name){
+  const p = {
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    bar:'<path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/>',
+    archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 13h4"/>',
+    book:'<path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 17.5v-13z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/>',
+    refresh:'<path d="M21 12a9 9 0 11-3-6.7"/><path d="M21 3v6h-6"/>',
+    layers:'<path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5M3 17l9 5 9-5"/>',
+    cal2:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    flag:'<path d="M5 3v18"/><path d="M5 4h13l-3 4 3 4H5"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p[name]}</svg>`;
+}
+document.getElementById('nav').innerHTML = [
+  ['Dashboard','grid','answeros-dashboard.html'],['All Answers','list','answeros-all-answers.html'],['Analytics','bar','answeros-analytics.html'],
+  ['PYQ Tracker','archive','answeros-pyq-tracker.html'],['Learnings','book','answeros-learnings.html'],['Revision Hub','refresh','answeros-revision-hub.html',true],['Flashcards','layers','answeros-flashcards.html'],
+  ['Calendar','cal2','answeros-calendar.html'],['Goals','flag','answeros-goals.html'],['Settings','gear','answeros-settings.html']
+].map(([label,ic,href,active])=> href
+    ? `<a href="${href}" class="nav-item ${active?'active':''}" style="text-decoration:none;">${navIcon(ic)}<span>${label}</span></a>`
+    : `<div class="nav-item" style="opacity:.55;cursor:default;">${navIcon(ic)}<span>${label}</span></div>`
+).join('');
+
+/* ---------- spaced revision logic (same Leitner-style as PYQ Tracker) ---------- */
+function scheduleInterval(confidence){
+  if(confidence<=2) return 3;
+  if(confidence===3) return 7;
+  return 21;
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function addDays(dateStr, days){ const d = new Date(dateStr); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+function dueStatus(a){
+  if(!a.reviewed || !a.nextDue) return 'none';
+  const today = todayStr();
+  if(a.nextDue < today) return 'overdue';
+  if(a.nextDue === today) return 'due-today';
+  return 'scheduled';
+}
+
+/* ---------- keyword vault ---------- */
+const keywordCounts = {};
+ANSWERS.forEach(a=> a.keywords.forEach(k=>{ keywordCounts[k] = (keywordCounts[k]||0)+1; }));
+const topKeywords = Object.entries(keywordCounts).sort((a,b)=>b[1]-a[1]);
+let activeKeyword = null;
+function renderVault(){
+  document.getElementById('vaultChips').innerHTML = topKeywords.map(([k,n])=>
+    `<div class="vault-chip ${activeKeyword===k?'active':''}" data-kw="${k}">${k} <span class="vcount">${n}</span></div>`
+  ).join('');
+  document.querySelectorAll('.vault-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      activeKeyword = activeKeyword===chip.dataset.kw ? null : chip.dataset.kw;
+      renderVault();
+      render();
+    });
+  });
+  document.getElementById('kwFilterTag').innerHTML = activeKeyword
+    ? `<span class="clear-filter" id="clearKw">✕ Filtering: ${activeKeyword}</span>` : '';
+  const clearEl = document.getElementById('clearKw');
+  if(clearEl) clearEl.addEventListener('click', ()=>{ activeKeyword=null; renderVault(); render(); });
+}
+renderVault();
+
+/* ---------- filters/search/sort ---------- */
+let activePaper = 'All';
+let searchTerm = '';
+const papersPresent = [...new Set(ANSWERS.map(a=>a.paper))];
+document.getElementById('paperChips').innerHTML = ['All', ...papersPresent].map(p=>
+  `<div class="chip ${p==='All'?'active':''}" data-paper="${p}">${p}</div>`
+).join('');
+document.getElementById('paperChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if(!chip) return;
+  activePaper = chip.dataset.paper;
+  document.querySelectorAll('#paperChips .chip').forEach(c=>c.classList.toggle('active', c===chip));
+  render();
+});
+document.getElementById('searchBox').addEventListener('input', e=>{ searchTerm = e.target.value.toLowerCase(); render(); });
+document.getElementById('sortSel').addEventListener('change', render);
+
+function render(){
+  renderMiniStats();
+  renderDueStrip();
+
+  let rows = ANSWERS.filter(a=>{
+    if(activePaper!=='All' && a.paper!==activePaper) return false;
+    if(activeKeyword && !a.keywords.includes(activeKeyword)) return false;
+    if(searchTerm){
+      const hay = (a.subtopic+' '+a.subject+' '+a.learning).toLowerCase();
+      if(!hay.includes(searchTerm)) return false;
+    }
+    return true;
+  });
+  const sortVal = document.getElementById('sortSel').value;
+  rows = rows.slice().sort((a,b)=>{
+    if(sortVal==='date-desc') return new Date(b.date)-new Date(a.date);
+    if(sortVal==='priority') return a.score-b.score;
+    if(sortVal==='due-first'){
+      const rank = {overdue:0,'due-today':1,scheduled:2,none:3};
+      return rank[dueStatus(a)]-rank[dueStatus(b)];
+    }
+    return 0;
+  });
+
+  const listEl = document.getElementById('list');
+  const emptyEl = document.getElementById('emptyState');
+  if(rows.length===0){ listEl.innerHTML=''; emptyEl.style.display='block'; return; }
+  emptyEl.style.display='none';
+
+  listEl.innerHTML = rows.map(a=>{
+    const col = PAPER_COLORS[a.paper]||'#888';
+    const scoreColor = a.score>=6.5?'#1c5c30':a.score>=4.5?'#8a6212':'#b3402c';
+    const scoreBg = a.score>=6.5?'#e6f4ea':a.score>=4.5?'#fbf5e8':'#fbf1ee';
+    const d = new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    const status = dueStatus(a);
+    const stars = [1,2,3,4,5].map(n=>`<svg class="star ${n<=a.confidence?'filled':''}" data-star="${n}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4.5L6 21l1.5-7.5L2 9h7z"/></svg>`).join('');
+    let revisionHtml = '';
+    if(!a.reviewed){
+      revisionHtml = `<span style="color:var(--ink-300);">Mark reviewed to start revision cycle</span>`;
+    }else{
+      const label = status==='overdue' ? `Overdue — was due ${a.nextDue}` : status==='due-today' ? 'Due today' : `Next revision: ${a.nextDue}`;
+      revisionHtml = `<span class="${status==='overdue'?'overdue':status==='due-today'?'due-today':''}">${label}</span>
+        <button class="revise-btn" data-revise="${a.id}">Mark Revised</button>`;
+    }
+    const kwHtml = a.keywords.map(k=>`<span class="kw-chip ${activeKeyword===k?'hit':''}">${k}</span>`).join('');
+    return `<div class="rcard" data-id="${a.id}">
+      <div class="rcard-top">
+        <div class="ptag" style="background:${col}1a;color:${col};">${a.paper}</div>
+        <div class="scorebadge" style="background:${scoreBg};color:${scoreColor};">${a.score.toFixed(1)}</div>
+        <div class="r-main">
+          <div class="r-title">${a.subtopic}</div>
+          <div class="r-meta">${a.subject} · ${d}<span class="gap-badge">${a.gapCategory}</span></div>
+        </div>
+      </div>
+      <div class="learning-callout serif"><b>My One Learning —</b> ${a.learning}</div>
+      <div class="topper-line">🏆 <b>Topper Edge:</b> ${a.topperEdge}</div>
+      <div class="kw-chip-row">${kwHtml}</div>
+      <div class="rcard-controls">
+        <label class="attempt-toggle">
+          <input type="checkbox" data-reviewed="${a.id}" ${a.reviewed?'checked':''}/>
+          Internalized
+        </label>
+        <div class="stars" data-stars-for="${a.id}">${stars}</div>
+        <div class="revision-info ${status}">${revisionHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  listEl.querySelectorAll('[data-reviewed]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const a = ANSWERS.find(x=>x.id===el.dataset.reviewed);
+      a.reviewed = el.checked;
+      if(a.reviewed && !a.confidence){ a.confidence = 3; }
+      if(a.reviewed){ a.lastRevised = todayStr(); a.nextDue = addDays(todayStr(), scheduleInterval(a.confidence)); }
+      else { a.nextDue = null; a.confidence = 0; }
+      render();
+    });
+  });
+  listEl.querySelectorAll('[data-stars-for]').forEach(wrap=>{
+    wrap.querySelectorAll('.star').forEach(star=>{
+      star.addEventListener('click', ()=>{
+        const a = ANSWERS.find(x=>x.id===wrap.dataset.starsFor);
+        a.confidence = parseInt(star.dataset.star);
+        if(a.reviewed){ a.nextDue = addDays(a.lastRevised||todayStr(), scheduleInterval(a.confidence)); }
+        render();
+      });
+    });
+  });
+  listEl.querySelectorAll('[data-revise]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const a = ANSWERS.find(x=>x.id===btn.dataset.revise);
+      a.lastRevised = todayStr();
+      a.nextDue = addDays(todayStr(), scheduleInterval(a.confidence));
+      render();
+    });
+  });
+}
+
+function renderMiniStats(){
+  const total = ANSWERS.length;
+  const internalized = ANSWERS.filter(a=>a.reviewed).length;
+  const overdue = ANSWERS.filter(a=>dueStatus(a)==='overdue').length;
+  const kwCount = Object.keys(keywordCounts).length;
+  document.getElementById('ministats').innerHTML = `
+    <div class="ministat"><div class="mv">${total}</div><div class="ml">Learnings Banked</div></div>
+    <div class="ministat"><div class="mv">${internalized}/${total}</div><div class="ml">Internalized</div></div>
+    <div class="ministat flag"><div class="mv">${overdue}</div><div class="ml">Overdue for Revision</div></div>
+    <div class="ministat"><div class="mv">${kwCount}</div><div class="ml">Keywords in Vault</div></div>
+  `;
+}
+
+function renderDueStrip(){
+  const due = ANSWERS.filter(a=> a.reviewed && (dueStatus(a)==='overdue' || dueStatus(a)==='due-today'));
+  document.getElementById('dueCount').textContent = due.length ? `${due.length} to revise` : '';
+  const listEl = document.getElementById('dueList');
+  if(due.length===0){
+    listEl.innerHTML = `<div class="due-empty">Nothing due right now — mark a takeaway "Internalized" below to start its revision cycle.</div>`;
+    return;
+  }
+  listEl.innerHTML = due.map(a=>`<div class="due-chip" data-jump="${a.id}"><span class="dpaper">${a.paper}</span>${a.subtopic}</div>`).join('');
+  listEl.querySelectorAll('[data-jump]').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const el = document.querySelector(`.rcard[data-id="${chip.dataset.jump}"]`);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
