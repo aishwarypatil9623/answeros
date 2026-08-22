@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { HashRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { getAnswers, getConfig, metrics, saveConfig, subscribe, sync, type Answer } from './data';
 import './styles.css';
 
@@ -11,4 +11,4 @@ function AnswerList({answers}:{answers:Answer[]}){return <div>{answers.map(a=><d
 function Card({title,children}:{title:string,children:ReactNode}){return <section className="card"><h2>{title}</h2>{children}</section>}
 function List({title}:{title:string}){const [answers,setAnswers]=useState(getAnswers());useEffect(()=>subscribe(()=>setAnswers(getAnswers())),[]);return <Card title={`${title} · ${answers.length} synced answers`}><AnswerList answers={answers.slice().sort((a,b)=>b.date.localeCompare(a.date))}/></Card>}
 function Settings(){const [c,setC]=useState(getConfig());const [msg,setMsg]=useState('');const [busy,setBusy]=useState(false);function update(k:keyof typeof c,v:string|boolean|number){const next={...c,[k]:v};setC(next);saveConfig(next)}async function doSync(){setBusy(true);try{const n=await sync();setMsg(`Successfully synced ${n} answers.`)}catch(e){setMsg(e instanceof Error?e.message:'Sync failed')}finally{setBusy(false)}}return <div className="settings"><Card title="Google Sheet Sync"><p className="muted">The Google Sheet remains the source of truth. React reads the same v2 local store as the legacy pages.</p><label>Web App URL<input value={c.syncUrl} onChange={e=>update('syncUrl',e.target.value)} placeholder="https://script.google.com/macros/s/.../exec"/></label><label>Sync token<input value={c.syncToken} onChange={e=>update('syncToken',e.target.value)} placeholder="Optional"/></label><div className="row"><button onClick={doSync} disabled={busy}>{busy?'Syncing…':'Sync Now'}</button><button className="secondary" onClick={()=>setMsg('Settings saved locally.')}>Save</button></div>{msg&&<p className="notice">{msg}</p>}</Card><Card title="Migration status"><p>React + TypeScript foundation is active in <code>/app</code>.</p><p className="muted">The legacy HTML pages remain untouched as a fallback while the new app is migrated.</p></Card></div>}
-export default function App(){return <BrowserRouter><Layout/></BrowserRouter>}
+export default function App(){return <HashRouter><Layout/></HashRouter>}
