@@ -2,8 +2,6 @@ from pathlib import Path
 
 ROOT = Path('.')
 
-# Every page gets the same canonical answer object. Pages may add UI-specific
-# derived fields, but they must not invent a second Sheet mapping layer.
 LIVE_EXPR = """const ANSWERS = (() => {
   const live = window.AnswerOS?.getAnswers?.() || [];
   if (live.length) {
@@ -95,7 +93,7 @@ def adapt(path):
         replacement = LIVE_EXPR + text[open_pos + 1:close_pos] + '];\n})();'
         text = text[:start] + replacement + text[close_pos + 1:]
 
-    # Upgrade legacy adapters that only copied a small subset of fields.
+    # Upgrade older shared-store adapters to the canonical mapping.
     legacy_anchor = "date: a.date || a.Date || a.timestamp || a.Timestamp || '',"
     if legacy_anchor in text:
         start = text.rfind('const ANSWERS = (() => {', 0, text.index(legacy_anchor))
@@ -103,9 +101,14 @@ def adapt(path):
             end_marker = '\n  return ['
             end = text.find(end_marker, start)
             if end != -1:
-                prefix = LIVE_EXPR.rstrip('[')
                 fallback = text[end + len(end_marker):]
                 text = text[:start] + LIVE_EXPR + fallback
+
+    # All Answers historically uses `demand` for the checklist array, while
+    # Analytics uses it as the numeric percentage. Keep the canonical numeric
+    # field and point the checklist UI at the canonical breakdown instead.
+    text = text.replace('(a.demand||[]).map(', '((a.demandBreakdown || a.demand || [])).map(')
+    text = text.replace('a.demand.map(', '(a.demandBreakdown || a.demand || []).map(')
 
     hook = """\n<script>\nwindow.addEventListener('answeros:data-updated', function(){\n  if (window.__answerosLiveReloadBound) return;\n  window.__answerosLiveReloadBound = true;\n  setTimeout(function(){ location.reload(); }, 50);\n});\n</script>\n"""
     if 'answeros:data-updated' not in text and '</body>' in text:
@@ -121,7 +124,6 @@ changed = []
 for path in sorted(ROOT.glob('*.html')):
     if path.name in {'answeros-settings.html'}:
         continue
-    if adapt(path):
-        changed.append(path.name)
+    if adapt(path): changed.append(path.name)
 
 print('Adapted:', ', '.join(changed) if changed else 'none')
