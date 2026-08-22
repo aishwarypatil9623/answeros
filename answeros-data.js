@@ -1,112 +1,267 @@
-/* AnswerOS shared data + Google Sheet sync layer */
+/* AnswerOS shared data contract + Google Sheet sync layer v2 */
 (function () {
   'use strict';
-  const STORE_KEY = 'answeros:store:v1';
-  const CONFIG_KEY = 'answeros:config:v1';
-  const DEFAULT = { syncUrl: '', syncToken: '', autoSyncEnabled: true, syncIntervalMinutes: 15 };
+
+  const VERSION = 2;
+  const STORE_KEY = 'answeros:store:v2';
+  const CONFIG_KEY = 'answeros:config:v2';
+  const DEFAULT_CONFIG = { syncUrl: '', syncToken: '', autoSyncEnabled: true, syncIntervalMinutes: 15 };
+
+  const ALIASES = {
+    id: ['id', 'ID', 'Id', 'rowId', 'Row ID'],
+    date: ['date', 'Date', 'Question Date', 'questionDate', 'timestamp', 'Timestamp'],
+    paper: ['paper', 'Paper', 'GS Paper', 'GS_Paper', 'gsPaper', 'GSPaper'],
+    subject: ['subject', 'Subject'],
+    theme: ['theme', 'Theme', 'topic', 'Topic'],
+    subtopic: ['subtopic', 'Subtopic', 'Sub-topic', 'Sub Topic'],
+    question: ['question', 'Question', 'title', 'Title'],
+    marks: ['marks', 'Marks', 'score', 'Score', 'Marks Obtained', 'Marks obtained'],
+    maxMarks: ['maxMarks', 'Max Marks', 'Max marks', 'max', 'Max', 'Maximum Marks'],
+    directive: ['directive', 'Directive', 'commandWord', 'Command Word', 'questionDirective'],
+    demand: ['demandAddressed', 'Demand Addressed', 'demand_addressed', 'demandPct', 'Demand %', 'Demand Addressed %', 'demand', 'Demand'],
+    status: ['status', 'Status'],
+    gapCategory: ['gapCategory', 'Gap Category', 'gap', 'Gap', 'recurringGap', 'Recurring Gap'],
+    feedback: ['feedback', 'Feedback', 'evaluatorFeedback', 'Evaluator Feedback'],
+    learning: ['learning', 'Learning', 'keyLearning', 'Key Learning'],
+    pdfDate: ['pdfDate', 'PDF Date', 'Answer Date', 'answerDate'],
+    bestIntro: ['bestIntro', 'Best Intro'],
+    idealSubheadings: ['idealSubheadings', 'Ideal Subheadings'],
+    mustHavePoints: ['mustHavePoints', 'Must Have Points'],
+    valueAdditions: ['valueAdditions', 'Value Additions'],
+    keywords: ['keywords', 'Keywords'],
+    examples: ['examples', 'Examples'],
+    bestConclusion: ['bestConclusion', 'Best Conclusion'],
+    improvements: ['improvements', 'Improvements'],
+    topperEdge: ['topperEdge', 'Topper Edge'],
+    demandBreakdown: ['demandBreakdown', 'Demand Breakdown', 'demandItems', 'Demand Items']
+  };
 
   function read(key, fallback) {
-    try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch (_) { return fallback; }
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch (_) { return fallback; }
   }
-  let store = read(STORE_KEY, { rows: [], answers: [], lastSync: null });
-  let config = Object.assign({}, DEFAULT, read(CONFIG_KEY, {}));
-  let syncing = false;
-
-  function saveStore() { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
-  function saveConfig() { localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
-  function broadcast(name, detail) { window.dispatchEvent(new CustomEvent(name, { detail })); }
-
+  function save(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+  function first(row, keys) {
+    for (const key of keys) if (row && row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
+    return '';
+  }
+  function toNumber(value, fallback = null) {
+    if (value === undefined || value === null || value === '') return fallback;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : fallback;
+    const n = Number(String(value).replace(/,/g, '').replace(/[^0-9.\-]/g, ''));
+    return Number.isFinite(n) ? n : fallback;
+  }
   function parseDate(value) {
     if (value === undefined || value === null || value === '') return '';
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      const d = new Date(Date.UTC(1899, 11, 30) + value * 86400000);
+      return isNaN(d) ? '' : d.toISOString().slice(0, 10);
+    }
     if (value instanceof Date && !isNaN(value)) return value.toISOString().slice(0, 10);
     const s = String(value).trim();
     if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-    const dmy = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);
-    if (dmy) return `${dmy[3]}-${String(dmy[2]).padStart(2,'0')}-${String(dmy[1]).padStart(2,'0')}`;
+    const m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);
+    if (m) return `${m[3]}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`;
     const parsed = new Date(s);
     return isNaN(parsed) ? '' : parsed.toISOString().slice(0, 10);
   }
-
-  function toNumber(value, fallback = 0) {
-    if (value === undefined || value === null || value === '') return fallback;
-    const n = Number(String(value).replace(/[^0-9.\-]/g, ''));
-    return Number.isFinite(n) ? n : fallback;
+  function parseDemand(value) {
+    const n = toNumber(value, null);
+    if (n === null) return null;
+    return n >= 0 && n <= 1 ? Math.round(n * 100) : Math.max(0, Math.min(100, n));
+  }
+  function listValue(value) {
+    if (Array.isArray(value)) return value;
+    if (value === undefined || value === null || value === '') return [];
+    if (typeof value === 'string') return value.split(/\s*\|\s*|\s*;\s*|\n+/).map(s => s.trim()).filter(Boolean);
+    return [value];
+  }
+  function textValue(value) {
+    if (value === undefined || value === null) return '';
+    if (typeof value === 'string') return value.trim();
+    try { return JSON.stringify(value); } catch (_) { return String(value); }
   }
 
-  function first(row, ...keys) {
-    for (const key of keys) if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
-    return '';
+  function normalizeRow(row, index = 0) {
+    if (!row || typeof row !== 'object') return { schemaVersion: VERSION, id: String(index + 1), rowIndex: index, raw: row, valid: false, errors: ['Row is not an object'] };
+    const date = parseDate(first(row, ALIASES.date));
+    const marks = toNumber(first(row, ALIASES.marks), null);
+    const maxMarks = toNumber(first(row, ALIASES.maxMarks), 15) || 15;
+    const demandAddressed = parseDemand(first(row, ALIASES.demand));
+    const normalized = {
+      schemaVersion: VERSION,
+      id: String(first(row, ALIASES.id) || index + 1),
+      rowIndex: index,
+      date,
+      paper: textValue(first(row, ALIASES.paper)),
+      subject: textValue(first(row, ALIASES.subject)),
+      theme: textValue(first(row, ALIASES.theme)),
+      subtopic: textValue(first(row, ALIASES.subtopic)),
+      question: textValue(first(row, ALIASES.question)),
+      marks: marks === null ? 0 : marks,
+      maxMarks,
+      max: maxMarks,
+      score10: maxMarks > 0 && marks !== null ? +(marks / maxMarks * 10).toFixed(2) : null,
+      score: marks === null ? 0 : marks,
+      directive: textValue(first(row, ALIASES.directive)),
+      demandAddressed,
+      demandPct: demandAddressed,
+      demand: demandAddressed,
+      status: textValue(first(row, ALIASES.status)) || 'PROCESSED',
+      gapCategory: textValue(first(row, ALIASES.gapCategory)),
+      feedback: first(row, ALIASES.feedback),
+      learning: textValue(first(row, ALIASES.learning)),
+      pdfDate: textValue(first(row, ALIASES.pdfDate)),
+      bestIntro: textValue(first(row, ALIASES.bestIntro)),
+      idealSubheadings: listValue(first(row, ALIASES.idealSubheadings)),
+      mustHavePoints: listValue(first(row, ALIASES.mustHavePoints)),
+      valueAdditions: listValue(first(row, ALIASES.valueAdditions)),
+      keywords: listValue(first(row, ALIASES.keywords)),
+      examples: listValue(first(row, ALIASES.examples)),
+      bestConclusion: textValue(first(row, ALIASES.bestConclusion)),
+      improvements: listValue(first(row, ALIASES.improvements)),
+      topperEdge: textValue(first(row, ALIASES.topperEdge)),
+      demandBreakdown: listValue(first(row, ALIASES.demandBreakdown)),
+      raw: row
+    };
+    normalized.valid = Boolean(normalized.date || normalized.question || normalized.subtopic || normalized.subject);
+    normalized.errors = [];
+    if (!normalized.date) normalized.errors.push('Missing/invalid date');
+    if (!normalized.question && !normalized.subtopic) normalized.errors.push('Missing question/subtopic');
+    return normalized;
   }
 
-  function normaliseRows(rows) {
-    return rows.map((row, index) => {
-      if (!row || typeof row !== 'object') return { id: String(index + 1), value: row };
-      const dateRaw = first(row, 'date', 'Date', 'Question Date', 'questionDate', 'timestamp', 'Timestamp');
-      const marksRaw = first(row, 'marks', 'Marks', 'score', 'Score');
-      const maxRaw = first(row, 'max', 'Max', 'maxMarks', 'Max Marks');
-      const demandRaw = first(row,
-        'demandAddressed', 'Demand Addressed', 'demand_addressed',
-        'demandPct', 'Demand %', 'Demand Addressed %', 'demand', 'Demand'
-      );
-      const demand = toNumber(demandRaw, NaN);
-      return Object.assign({}, row, {
-        id: String(first(row, 'id', 'ID', 'Id') || index + 1),
-        date: parseDate(dateRaw),
-        paper: first(row, 'paper', 'Paper', 'gsPaper', 'GSPaper') || 'GS2',
-        subject: first(row, 'subject', 'Subject'),
-        theme: first(row, 'theme', 'Theme', 'topic', 'Topic', 'Subtopic', 'subtopic'),
-        subtopic: first(row, 'subtopic', 'Subtopic', 'theme', 'Theme', 'topic', 'Topic'),
-        question: first(row, 'question', 'Question', 'title', 'Title'),
-        marks: toNumber(marksRaw, 0),
-        max: toNumber(maxRaw, 15) || 15,
-        score: toNumber(first(row, 'score', 'Score', 'marks', 'Marks'), 0),
-        status: first(row, 'status', 'Status'),
-        gapCategory: first(row, 'gapCategory', 'Gap Category', 'gap', 'Gap'),
-        demandAddressed: Number.isFinite(demand) ? demand : null
-      });
+  function normalizeRows(rows) { return (Array.isArray(rows) ? rows : []).map(normalizeRow); }
+
+  function parseCSV(text) {
+    const rows = [], row = [];
+    let current = row, field = '', quoted = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], next = text[i + 1];
+      if (quoted) {
+        if (ch === '"' && next === '"') { field += '"'; i++; }
+        else if (ch === '"') quoted = false;
+        else field += ch;
+      } else if (ch === '"') quoted = true;
+      else if (ch === ',') { current.push(field); field = ''; }
+      else if (ch === '\n') { current.push(field.replace(/\r$/, '')); rows.push(current); current = []; field = ''; }
+      else field += ch;
+    }
+    current.push(field);
+    if (current.some(Boolean)) rows.push(current);
+    if (!rows.length) return [];
+    const headers = rows[0].map((h, i) => h || `Column ${i + 1}`);
+    return rows.slice(1).map(values => Object.fromEntries(headers.map((h, i) => [h, values[i] ?? ''])));
+  }
+
+  let store = read(STORE_KEY, { schemaVersion: VERSION, rows: [], answers: [], lastSync: null, source: 'none', validation: null });
+  let config = Object.assign({}, DEFAULT_CONFIG, read(CONFIG_KEY, {}));
+  let syncing = false;
+  const subscribers = new Set();
+
+  function getStore() { return { ...store, answers: store.answers || normalizeRows(store.rows || []) }; }
+  function publish() {
+    const payload = getStore();
+    window.dispatchEvent(new CustomEvent('answeros:data-updated', { detail: payload }));
+    subscribers.forEach(fn => { try { fn(payload); } catch (_) {} });
+  }
+  function validate(answers = getAnswers({ includeInvalid: true })) {
+    const errors = [], warnings = [];
+    answers.forEach(a => {
+      (a.errors || []).forEach(e => errors.push({ id: a.id, rowIndex: a.rowIndex, error: e }));
+      if (a.maxMarks <= 0) errors.push({ id: a.id, rowIndex: a.rowIndex, error: 'Max marks must be positive' });
+      if (a.marks > a.maxMarks) warnings.push({ id: a.id, rowIndex: a.rowIndex, warning: 'Marks exceed max marks' });
+      if (!a.paper) warnings.push({ id: a.id, rowIndex: a.rowIndex, warning: 'Missing paper' });
     });
+    return { ok: errors.length === 0, errors, warnings, total: answers.length, valid: answers.filter(a => a.valid).length };
+  }
+  function setRows(rows, meta = {}) {
+    if (!Array.isArray(rows)) throw new Error('AnswerOS sync data must contain an array of rows.');
+    const answers = normalizeRows(rows);
+    store = { schemaVersion: VERSION, rows, answers, lastSync: new Date().toISOString(), source: meta.source || 'sheet', validation: validate(answers) };
+    save(STORE_KEY, store);
+    publish();
+    return getStore();
+  }
+  function getAnswers(options = {}) {
+    const answers = store.answers || normalizeRows(store.rows || []);
+    return options.includeInvalid ? answers : answers.filter(a => a.valid);
+  }
+  function getRows() { return store.rows || []; }
+  function getConfig() { return { ...config }; }
+  function setConfig(patch = {}) {
+    config = Object.assign({}, config, patch);
+    save(CONFIG_KEY, config);
+    window.dispatchEvent(new CustomEvent('answeros:config-updated', { detail: getConfig() }));
+    maybeAutoSync();
+    return getConfig();
   }
 
-  if (Array.isArray(store.rows) && store.rows.length) {
-    store.answers = normaliseRows(store.rows);
-    saveStore();
-  }
-
-  function setRows(rows) {
-    if (!Array.isArray(rows)) throw new Error('Sync response did not contain an array of rows.');
-    store.rows = rows;
-    store.answers = normaliseRows(rows);
-    store.lastSync = new Date().toISOString();
-    saveStore();
-    broadcast('answeros:data-updated', store);
-    return store;
+  function metrics() {
+    const answers = getAnswers();
+    const score = a => a.score10 ?? 0;
+    const total = answers.length;
+    const avg = total ? answers.reduce((s, a) => s + score(a), 0) / total : 0;
+    const papers = {}, directives = {}, gaps = {};
+    answers.forEach(a => {
+      const p = a.paper || 'Unknown';
+      if (!papers[p]) papers[p] = { count: 0, total: 0 };
+      papers[p].count++; papers[p].total += score(a);
+      if (a.directive) {
+        if (!directives[a.directive]) directives[a.directive] = { count: 0, total: 0 };
+        directives[a.directive].count++; directives[a.directive].total += score(a);
+      }
+      if (a.gapCategory) gaps[a.gapCategory] = (gaps[a.gapCategory] || 0) + 1;
+    });
+    const dated = [...new Set(answers.filter(a => a.date).map(a => a.date))].sort();
+    let currentStreak = 0, longestStreak = 0, run = 0;
+    for (let i = 0; i < dated.length; i++) {
+      const prev = i ? new Date(dated[i - 1]) : null, cur = new Date(dated[i]);
+      if (!prev || (cur - prev) / 86400000 !== 1) run = 1; else run++;
+      longestStreak = Math.max(longestStreak, run);
+    }
+    if (dated.length) {
+      currentStreak = 1;
+      for (let i = dated.length - 1; i > 0; i--) {
+        if ((new Date(dated[i]) - new Date(dated[i - 1])) / 86400000 === 1) currentStreak++; else break;
+      }
+    }
+    const demandRows = answers.filter(a => Number.isFinite(a.demandAddressed));
+    return {
+      schemaVersion: VERSION, total, averageScore10: +avg.toFixed(2),
+      bestScore10: total ? Math.max(...answers.map(score)) : 0,
+      worstScore10: total ? Math.min(...answers.map(score)) : 0,
+      currentStreak, longestStreak,
+      averageDemandPct: demandRows.length ? Math.round(demandRows.reduce((s, a) => s + a.demandAddressed, 0) / demandRows.length) : null,
+      papers: Object.fromEntries(Object.entries(papers).map(([k, v]) => [k, { count: v.count, averageScore10: +(v.total / v.count).toFixed(2) }])),
+      directives: Object.fromEntries(Object.entries(directives).map(([k, v]) => [k, { count: v.count, averageScore10: +(v.total / v.count).toFixed(2) }])),
+      gaps, dates: dated
+    };
   }
 
   function buildSyncUrl() {
-    if (!config.syncUrl) throw new Error('Google Sheet Web App URL is not configured.');
+    if (!config.syncUrl) throw new Error('Google Sheet sync URL is not configured.');
     const url = new URL(config.syncUrl);
     if (config.syncToken) url.searchParams.set('token', config.syncToken);
     url.searchParams.set('_', Date.now());
     return url.toString();
   }
-
   async function sync() {
-    if (syncing) return { count: store.rows.length, lastSync: store.lastSync, skipped: true };
+    if (syncing) return { skipped: true, count: getRows().length, lastSync: store.lastSync };
     syncing = true;
     try {
       const response = await fetch(buildSyncUrl(), { method: 'GET', mode: 'cors', cache: 'no-store' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const text = await response.text();
+      let data;
+      if (contentType.includes('json') || text.trim().startsWith('{') || text.trim().startsWith('[')) data = JSON.parse(text);
+      else data = { rows: parseCSV(text) };
       if (data && data.ok === false) throw new Error(data.error || 'The sync endpoint reported an error.');
-      const rows = Array.isArray(data?.rows) ? data.rows : Array.isArray(data?.data) ? data.data : Array.isArray(data?.answers) ? data.answers : null;
+      const rows = Array.isArray(data) ? data : (Array.isArray(data.rows) ? data.rows : Array.isArray(data.data) ? data.data : Array.isArray(data.answers) ? data.answers : null);
       if (!rows) throw new Error('Connected, but the response has no rows/data/answers array.');
-      setRows(rows);
-      return { count: rows.length, lastSync: store.lastSync };
-    } finally {
-      syncing = false;
-    }
+      return setRows(rows, { source: 'google-sheet' });
+    } finally { syncing = false; }
   }
-
   function maybeAutoSync() {
     if (!config.autoSyncEnabled || !config.syncUrl) return;
     const age = store.lastSync ? Date.now() - new Date(store.lastSync).getTime() : Infinity;
@@ -115,138 +270,38 @@
   }
 
   window.AnswerOS = {
-    getConfig: () => Object.assign({}, config),
-    setConfig(patch) {
-      config = Object.assign({}, config, patch || {});
-      saveConfig();
-      broadcast('answeros:config-updated', Object.assign({}, config));
-      maybeAutoSync();
-    },
-    getStore: () => store,
-    getAnswers: () => store.answers || [],
-    getRows: () => store.rows || [],
-    sync,
+    VERSION,
+    SCHEMA: { version: VERSION, fields: ALIASES },
+    normalizeRow, normalizeRows, validate, metrics,
+    getStore, getRows, getAnswers, getConfig, setConfig, setRows, sync,
+    subscribe(fn) { if (typeof fn !== 'function') return () => {}; subscribers.add(fn); return () => subscribers.delete(fn); },
     get lastSync() { return store.lastSync; }
   };
 
-  window.addEventListener('storage', (event) => {
+  const oldStore = read('answeros:store:v1', null);
+  if ((!store.rows || !store.rows.length) && oldStore && Array.isArray(oldStore.rows) && oldStore.rows.length) {
+    store.rows = oldStore.rows;
+    store.answers = normalizeRows(oldStore.rows);
+    store.lastSync = oldStore.lastSync || null;
+    store.source = 'migrated-v1';
+    store.validation = validate(store.answers);
+    save(STORE_KEY, store);
+  } else if (Array.isArray(store.rows) && store.rows.length && (!store.answers || !store.answers.length)) {
+    store.answers = normalizeRows(store.rows);
+    store.validation = validate(store.answers);
+    save(STORE_KEY, store);
+  }
+
+  window.addEventListener('storage', event => {
     if (event.key === STORE_KEY) {
       store = read(STORE_KEY, store);
-      store.answers = normaliseRows(store.rows || []);
-      saveStore();
-      broadcast('answeros:data-updated', store);
+      store.answers = normalizeRows(store.rows || []);
+      publish();
     }
     if (event.key === CONFIG_KEY) {
-      config = Object.assign({}, DEFAULT, read(CONFIG_KEY, config));
+      config = Object.assign({}, DEFAULT_CONFIG, read(CONFIG_KEY, config));
       maybeAutoSync();
     }
   });
-
-  /* Dashboard is data-driven: repair legacy sample metrics after the page's original
-     renderer runs, using only the currently synced Sheet rows. */
-  window.addEventListener('DOMContentLoaded', function () {
-    if (!location.pathname.endsWith('answeros-dashboard.html')) return;
-    setTimeout(renderLiveDashboard, 0);
-  });
-
-  function renderLiveDashboard() {
-    const rows = normaliseRows(store.rows || []);
-    if (!rows.length) return;
-    const validDates = rows.filter(a => a.date && !isNaN(new Date(a.date).getTime()));
-    const score = a => a.max ? (a.marks / a.max * 10) : 0;
-    const total = rows.length;
-    const avg = total ? rows.reduce((s,a)=>s+score(a),0)/total : 0;
-    const best = total ? Math.max(...rows.map(score)) : 0;
-    const worst = total ? Math.min(...rows.map(score)) : 0;
-
-    function streaks() {
-      const dates = [...new Set(validDates.map(a=>a.date))].sort();
-      if (!dates.length) return {current:0,longest:0};
-      let longest=1, cur=1;
-      for(let i=1;i<dates.length;i++) {
-        const gap=(new Date(dates[i])-new Date(dates[i-1]))/86400000;
-        if(gap===1){cur++;longest=Math.max(longest,cur);} else cur=1;
-      }
-      let current=1, i=dates.length-1;
-      while(i>0 && (new Date(dates[i])-new Date(dates[i-1]))/86400000===1){current++;i--;}
-      return {current,longest};
-    }
-    const st = streaks();
-
-    const demandRows = rows.filter(a => Number.isFinite(a.demandAddressed));
-    const demand = demandRows.length ? Math.round(demandRows.reduce((s,a)=>s+a.demandAddressed,0)/demandRows.length) : null;
-
-    const q = document.getElementById('quickStats');
-    if (q) {
-      const items = q.querySelectorAll('.qs-item');
-      const vals = [total, st.current, st.longest, avg.toFixed(1), demand===null?'—':demand, best.toFixed(1), worst.toFixed(1)];
-      items.forEach((el,i)=>{ const v=el.querySelector('.qs-val'); if(v) v.innerHTML=`${vals[i]}<span>${i===4&&demand!==null?'%':i===3||i>=5?'/10':''}</span>`; });
-    }
-    const streakTop=document.getElementById('streakTop'); if(streakTop) streakTop.textContent=st.current+' Days';
-
-    const today = new Date();
-    const todayStr = today.toISOString().slice(0,10);
-    const todayCount = rows.filter(a=>a.date===todayStr).length;
-    const goalText=document.getElementById('todayGoalText');
-    if(goalText) goalText.innerHTML=`${todayCount} Answer${todayCount===1?'':'s'} Today`;
-    const goalBar=document.getElementById('todayGoalBar'); if(goalBar) goalBar.style.width='100%';
-
-    const counts={}, sums={};
-    rows.forEach(a=>{const p=a.paper||'Unknown';counts[p]=(counts[p]||0)+1;sums[p]=(sums[p]||0)+score(a);});
-    const labels=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]);
-    const colors={GS1:'#3b6fd5',GS2:'#2c8a46',GS3:'#7a4fd5',GS4:'#e0762c',Essay:'#e0a021',PSIR:'#22a3a3'};
-    const chartColor=labels.map(x=>colors[x]||'#9aa0a5');
-    const subjectCanvas=document.getElementById('subjectDonut');
-    if(subjectCanvas && window.Chart){const old=Chart.getChart(subjectCanvas);if(old)old.destroy();new Chart(subjectCanvas,{type:'doughnut',data:{labels,datasets:[{data:labels.map(x=>counts[x]),backgroundColor:chartColor,borderWidth:3,borderColor:'#fff'}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed} answers · avg ${(sums[ctx.label]/counts[ctx.label]).toFixed(1)}/10`}}}}});}
-    const td=document.getElementById('totalAnswersDonut');if(td)td.textContent=total;
-    const perf=document.getElementById('subjectPerf');if(perf)perf.innerHTML=labels.map(p=>{const a=sums[p]/counts[p],share=Math.round(counts[p]/total*100);return `<div class="subj-leg-row"><div class="subj-leg-dot" style="background:${colors[p]||'#9aa0a5'};"></div><div class="subj-leg-label"><b>${p}</b> <span class="subj-leg-count">${counts[p]} · ${share}%</span></div><div class="subj-leg-score" style="background:${a>=6.5?'#e6f4ea':a>=4.5?'#fbf5e8':'#fbf1ee'};color:${a>=6.5?'#1c5c30':a>=4.5?'#8a6212':'#b3402c'};">${a.toFixed(1)}</div></div>`;}).join('');
-    const ranked=labels.map(p=>({p,avg:sums[p]/counts[p],n:counts[p]}));
-    const weak=ranked.slice().sort((a,b)=>a.avg-b.avg)[0], heavy=ranked.slice().sort((a,b)=>b.n-a.n)[0];
-    const si=document.getElementById('subjectInsight');if(si&&weak&&heavy)si.innerHTML=`You've written most in <b>${heavy.p}</b> (${heavy.n} answers), but <b>${weak.p}</b> is scoring lowest at ${weak.avg.toFixed(1)}/10. Ring size = share of practice, score badge = where marks are actually landing.`;
-
-    const trendCanvas=document.getElementById('scoreTrend');
-    const trend=[...validDates].sort((a,b)=>a.date.localeCompare(b.date));
-    function drawTrend(){const n=document.getElementById('trendFilter')?.value||'all';const data=n==='all'?trend:trend.slice(-Number(n));if(!trendCanvas||!window.Chart)return;const old=Chart.getChart(trendCanvas);if(old)old.destroy();new Chart(trendCanvas,{type:'line',data:{labels:data.map(a=>new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})),datasets:[{data:data.map(score),borderColor:'#2c8a46',backgroundColor:'rgba(44,138,70,0.08)',fill:true,tension:.35,pointBackgroundColor:'#2c8a46',pointRadius:3,borderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:10,grid:{color:'#eef1ee'}},x:{grid:{display:false}}}}});}
-    const trendFilter=document.getElementById('trendFilter');
-    if(trendFilter){const fresh=trendFilter.cloneNode(true);trendFilter.parentNode.replaceChild(fresh,trendFilter);fresh.addEventListener('change',drawTrend);}
-    drawTrend();
-
-    const recent=[...rows].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
-    const rl=document.getElementById('recentList');if(rl)rl.innerHTML=recent.map(a=>{const d=a.date?new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'Date unavailable';const p=a.paper||'—';const c=colors[p]||'#888';return `<div class="ra-row"><div class="tag" style="background:${c}1a;color:${c};">${p}</div><div style="flex:1;min-width:0;"><div class="ra-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.subtopic||a.question||'Untitled answer'}</div><div class="ra-meta"><span>${d}</span><span>·</span><span>${a.subject||'—'}</span></div></div><div class="ra-score">${score(a).toFixed(1)}<span style="color:var(--ink-500);font-weight:500;">/10</span></div></div>`;}).join('');
-
-    const dated=[...validDates].sort((a,b)=>a.date.localeCompare(b.date));
-    if(dated.length){
-      const start=new Date(dated[0].date), end=new Date(dated[dated.length-1].date);
-      const span=Math.max(1,Math.ceil((end-start)/86400000));
-      const buckets=[];
-      const bucketCount=4;
-      for(let i=0;i<bucketCount;i++){const lo=start.getTime()+span*86400000*i/bucketCount,hi=start.getTime()+span*86400000*(i+1)/bucketCount;const r=dated.filter(a=>{const t=new Date(a.date).getTime();return t>=lo&&(i===bucketCount-1?t<=hi:t<hi);});buckets.push(r.length?r.reduce((s,a)=>s+score(a),0)/r.length:null);}
-      const labels4=['Period 1','Period 2','Period 3','Period 4'];
-      const c=document.getElementById('improveBar');if(c&&window.Chart){const old=Chart.getChart(c);if(old)old.destroy();new Chart(c,{type:'bar',data:{labels:labels4,datasets:[{data:buckets,backgroundColor:['#cfe8d8','#b8dfc4','#a2d6b1','#2c8a46'],borderRadius:6,maxBarThickness:34}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:10,grid:{color:'#eef1ee'}},x:{grid:{display:false}}}}});}
-      const finite=buckets.filter(x=>x!==null);const imp=finite.length>=2?finite[finite.length-1]-finite[0]:0;const iv=document.getElementById('improveVal');if(iv)iv.textContent=(imp>=0?'+':'')+imp.toFixed(1);
-    }
-
-    const bestRow=rows.slice().sort((a,b)=>score(b)-score(a))[0];
-    const highest=ranked.slice().sort((a,b)=>b.avg-a.avg)[0], most=ranked.slice().sort((a,b)=>b.n-a.n)[0];
-    const tp=document.getElementById('topPerf');if(tp&&bestRow&&highest&&most)tp.innerHTML=`<div class="kpi-box"><div class="kval">${score(bestRow).toFixed(1)}/10</div><div class="klabel">Best Score</div><div class="klabel" style="font-weight:600;color:var(--ink-700);">${bestRow.subject||bestRow.paper||'—'}</div></div><div class="kpi-box"><div class="kval">${highest.avg.toFixed(1)}/10</div><div class="klabel">Highest Average</div><div class="klabel" style="font-weight:600;color:var(--ink-700);">${highest.p}</div></div><div class="kpi-box"><div class="kval">${most.n}</div><div class="klabel">Most Answers</div><div class="klabel" style="font-weight:600;color:var(--ink-700);">${most.p}</div></div>`;
-
-    const pyqTotal=document.getElementById('pyqTotal'),pyqWritten=document.getElementById('pyqWritten'),pyqPending=document.getElementById('pyqPending'),pyqPct=document.getElementById('pyqPct');
-    [pyqTotal,pyqWritten,pyqPending,pyqPct].forEach(el=>{if(el)el.textContent='—';});
-    const pyqCard=pyqTotal?.closest('section.card'); if(pyqCard){const badge=pyqCard.querySelector('.card-head span');if(badge)badge.textContent='No PYQ data in sheet';}
-    const pyqProg=document.getElementById('pyqProgress');if(pyqProg)pyqProg.innerHTML='<div style="font-size:11.5px;color:var(--ink-500);line-height:1.5;">PYQ progress requires a PYQ dataset. No sample percentages are shown.</div>';
-    const pyqProgCard=pyqProg?.closest('section.card');if(pyqProgCard){const badge=pyqProgCard.querySelector('.card-head span');if(badge)badge.textContent='No PYQ data in sheet';}
-    const overallList=document.getElementById('overallList');if(overallList)overallList.innerHTML=`<div class="row"><div class="sdot" style="background:#3b6fd5"></div><div class="slabel">Answers Written</div><div class="sval">${total}</div></div><div class="row"><div class="sdot" style="background:#7a4fd5"></div><div class="slabel">Answers ≥ 6/10</div><div class="sval">${rows.filter(a=>score(a)>=6).length}</div></div>`;
-    const overallPct=document.getElementById('overallPct');if(overallPct)overallPct.textContent='—';
-    const overallCanvas=document.getElementById('overallDonut');if(overallCanvas&&window.Chart){const old=Chart.getChart(overallCanvas);if(old)old.destroy();new Chart(overallCanvas,{type:'doughnut',data:{datasets:[{data:[1,1],backgroundColor:['#2c8a46','#eef1ee'],borderWidth:0}]},options:{cutout:'74%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});}
-    const overallCard=overallPct?.closest('section.card');if(overallCard){const badge=overallCard.querySelector('.card-head span');if(badge)badge.textContent='Live answer data only';}
-
-    const gaps={};rows.forEach(a=>{if(a.gapCategory)gaps[a.gapCategory]=(gaps[a.gapCategory]||0)+1;});
-    const topGap=Object.entries(gaps).sort((a,b)=>b[1]-a[1])[0];
-    const focus=document.getElementById('focusArea');
-    if(focus&&weak){focus.innerHTML=`<div class="focus-headline">${weak.p} <span>· ${weak.avg.toFixed(1)}/10 avg</span></div><div class="focus-sub">Lowest-scoring paper, across ${weak.n} answers.</div>${topGap?`<div class="focus-note">Recurring gap: <b>${topGap[0]}</b> flagged in ${topGap[1]} of ${total} answers (${Math.round(topGap[1]/total*100)}%).</div>`:'<div class="focus-note">No gap-category data is available in the synced Sheet.</div>'}<div class="focus-secondary">Use the next 3 answers to deliberately address this weakness.</div>`;}
-
-    const bs=document.getElementById('bottomStrip');if(bs){const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-6);const weekCount=validDates.filter(a=>new Date(a.date)>=weekAgo).length;bs.innerHTML=`<div class="strip-item"><div class="si-icon">+</div><div><div class="si-val">${weekCount}</div><div class="si-label">Answers in last 7 days</div><div class="si-delta">Live Sheet data</div></div></div><div class="strip-item"><div class="si-icon">—</div><div><div class="si-val">—</div><div class="si-label">Revisions Done</div><div class="si-delta">No revision data in sheet</div></div></div><div class="strip-item"><div class="si-icon">↗</div><div><div class="si-val">${avg.toFixed(1)}/10</div><div class="si-label">Average Answer Quality</div><div class="si-delta">Live Sheet data</div></div></div><div class="strip-item"><div class="si-icon">—</div><div><div class="si-val">—</div><div class="si-label">Prelims Countdown</div><div class="si-delta">Exam date not configured here</div></div></div><div class="strip-item"><div class="si-icon">—</div><div><div class="si-val">—</div><div class="si-label">Mains Countdown</div><div class="si-delta">Exam date not configured here</div></div></div>`;}
-  }
-
-  maybeAutoSync();
+  window.addEventListener('DOMContentLoaded', maybeAutoSync);
 })();
