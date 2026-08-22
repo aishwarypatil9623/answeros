@@ -812,7 +812,7 @@ function render(){
     const isOpen = openIds.has(id);
     const d = new Date(a.date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
 
-    const demandListHtml = a.demand.map(di=>{
+    const demandListHtml = (a.demandBreakdown || a.demand || []).map(di=>{
       const icon = di.status==='done'?'✓':di.status==='partial'?'!':'✕';
       return `<div class="demand-item ${di.status}"><span class="di-ic">${icon}</span><span>${di.text}</span></div>`;
     }).join('');
@@ -829,7 +829,7 @@ function render(){
         </div>
       </div>` : '';
 
-    const railTicks = a.demand.map(di=>{
+    const railTicks = (a.demandBreakdown || a.demand || []).map(di=>{
       const icon = di.status==='done'?'✓':di.status==='partial'?'!':'✕';
       return `<div class="tick ${di.status}" title="${di.status}">${icon}</div>`;
     }).join('');

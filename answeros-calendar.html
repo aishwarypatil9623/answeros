@@ -592,7 +592,7 @@ function renderDayDetail(){
     const tier = scoreTier(a.score);
     const isOpen = expandedAnswerId === a.id;
 
-    const demandHtml = a.demand.map(di=>{
+    const demandHtml = (a.demandBreakdown || a.demand || []).map(di=>{
       const icon = di.status==='done'?'✓':di.status==='partial'?'!':'✕';
       return `<div class="da-demand-item ${di.status}"><span>${icon}</span><span>${di.text}</span></div>`;
     }).join('');
